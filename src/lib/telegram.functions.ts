@@ -9,8 +9,8 @@ export const PLANS = {
 export type PlanId = keyof typeof PLANS;
 
 async function tg(method: string, body: unknown) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const tgKey = process.env.TELEGRAM_API_KEY;
+  const lovableKey = process.env['LOVABLE_API_KEY'];
+  const tgKey = process.env['TELEGRAM_API_KEY'];
   if (!lovableKey) throw new Error("LOVABLE_API_KEY is not configured");
   if (!tgKey) throw new Error("TELEGRAM_API_KEY is not configured");
   const res = await fetch(`${GATEWAY_URL}/${method}`, {
@@ -30,7 +30,7 @@ async function tg(method: string, body: unknown) {
 }
 
 async function resolveChatId(): Promise<string | number> {
-  const fixed = process.env.TELEGRAM_CHAT_ID;
+  const fixed = process.env['TELEGRAM_CHAT_ID'];
   if (fixed) return fixed;
   const updates: any[] = await tg("getUpdates", {});
   for (let i = updates.length - 1; i >= 0; i--) {
