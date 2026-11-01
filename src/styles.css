@@ -68,4 +68,10 @@
 .lift:hover { transform: translateY(-4px); border-color: rgba(59,130,246,0.35); box-shadow: 0 12px 40px -16px rgba(59,130,246,0.4); }
 .fade-swap { animation: fadeSwap 0.35s ease; }
 @keyframes fadeSwap { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* Bewertungen-Laufband (rechts nach links) */
+.marquee { overflow: hidden; }
+.marquee-track { animation: marquee 45s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(calc(-50% - 0.5rem)); } }
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .reveal, .lift, .fade-swap { transition: none; animation: none; opacity: 1; transform: none; } }

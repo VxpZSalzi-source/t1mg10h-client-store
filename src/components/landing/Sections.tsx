@@ -22,7 +22,7 @@ import {
   STEPS,
 } from "@/data/content";
 import { PLANS } from "@/lib/telegram.functions";
-import { ClickGuiMockup, HudMockup } from "./Mockups";
+import { ClickGuiMockup } from "./Mockups";
 import { btnGhost, btnPrimary, Counter, PlaceholderTag, Reveal, SectionHeading } from "./ui";
 
 const discordProps = DISCORD_URL.startsWith("http")
@@ -240,13 +240,20 @@ export function Showcase() {
       <SectionHeading
         eyebrow="Showcase"
         title="So sieht es ingame aus."
-        text="Sauberes HUD, klare ArrayList – nichts lenkt ab."
+        text="HUD, Region Map, Staff-Liste, ArrayList und eigener Himmel mit Atmosphäre – alles in einem Client."
       />
       <Reveal className="relative mx-auto mt-14 max-w-5xl">
         <div className="absolute inset-10 -z-10 bg-primary/25 blur-[90px]" />
         <div className="rounded-2xl border border-white/[0.08] bg-card p-2 shadow-glow">
-          {/* PLATZHALTER: durch <img src="/screenshots/ingame.png" ... /> oder <video> ersetzen */}
-          <HudMockup />
+          {/* Echter Ingame-Screenshot – austauschen: Bild in public/screenshots/ legen */}
+          <img
+            src="/screenshots/ingame.webp"
+            alt="T1mg10h Client ingame: HUD mit FPS, Koordinaten, Region Map, Staff-Liste, ArrayList und Atmosphäre-Himmel"
+            width={1919}
+            height={1001}
+            loading="lazy"
+            className="block h-auto w-full rounded-xl"
+          />
         </div>
       </Reveal>
     </section>
@@ -296,56 +303,74 @@ export function Changelog() {
 }
 
 /* ---------------- 9. Bewertungen ---------------- */
-export function Reviews() {
+type Review = (typeof REVIEWS)[number];
+
+function ReviewCard({ r }: { r: Review }) {
+  const empty = !r.name && !r.text;
   return (
-    <section className="mx-auto max-w-6xl px-5 py-24 md:py-32">
-      <SectionHeading eyebrow="Bewertungen" title="Was Spieler sagen." />
-      <div className="mt-14 grid gap-4 md:grid-cols-3">
-        {REVIEWS.map((r, i) => {
-          const empty = !r.name && !r.text;
-          return (
-            <Reveal key={i} delay={i * 80}>
-              <figure
-                className={`h-full rounded-2xl border bg-card p-6 ${empty ? "border-dashed border-white/10" : "border-white/[0.06]"}`}
-              >
-                <div className="flex items-center gap-3">
-                  {r.avatar ? (
-                    <img
-                      src={r.avatar}
-                      alt={r.name}
-                      className="h-10 w-10 rounded-full object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-10 w-10 place-items-center rounded-full bg-white/5 text-muted-foreground">
-                      {r.name ? r.name.slice(0, 2).toUpperCase() : <User size={18} />}
-                    </span>
-                  )}
-                  <div>
-                    <div className="text-sm font-semibold">{r.name || "Name folgt"}</div>
-                    <div className="mt-0.5 flex gap-0.5">
-                      {Array.from({ length: 5 }).map((_, s) => (
-                        <Star
-                          key={s}
-                          size={13}
-                          className={s < r.stars ? "fill-primary text-primary" : "text-white/15"}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <blockquote className="mt-4 text-sm leading-relaxed text-muted-foreground">
-                  {r.text || "Bewertung folgt."}
-                </blockquote>
-                {empty && (
-                  <div className="mt-4">
-                    <PlaceholderTag />
-                  </div>
-                )}
-              </figure>
-            </Reveal>
-          );
-        })}
+    <figure
+      className={`w-[300px] shrink-0 rounded-2xl border bg-card p-6 sm:w-[340px] ${empty ? "border-dashed border-white/10" : "border-white/[0.06]"}`}
+    >
+      <div className="flex items-center gap-3">
+        {r.avatar ? (
+          <img src={r.avatar} alt={r.name} className="h-10 w-10 rounded-full object-cover" />
+        ) : (
+          <span className="grid h-10 w-10 place-items-center rounded-full bg-white/5 text-sm font-semibold text-muted-foreground">
+            {r.name ? r.name.slice(0, 2).toUpperCase() : <User size={18} />}
+          </span>
+        )}
+        <div>
+          <div className="text-sm font-semibold">{r.name || "Name folgt"}</div>
+          <div className="mt-0.5 flex gap-0.5">
+            {Array.from({ length: 5 }).map((_, s) => (
+              <Star
+                key={s}
+                size={13}
+                className={s < r.stars ? "fill-primary text-primary" : "text-white/15"}
+              />
+            ))}
+          </div>
+        </div>
       </div>
+      <blockquote className="mt-4 text-sm leading-relaxed text-muted-foreground">
+        {r.text || "Bewertung folgt."}
+      </blockquote>
+      {empty && (
+        <div className="mt-4">
+          <PlaceholderTag />
+        </div>
+      )}
+    </figure>
+  );
+}
+
+export function Reviews() {
+  // Mindestens 6 Karten pro Durchlauf (auch auf breiten Bildschirmen keine Lücke),
+  // dann doppelt rendern, damit das Laufband nahtlos von rechts nach links läuft.
+  const base = Array.from(
+    { length: Math.max(1, Math.ceil(6 / REVIEWS.length)) },
+    () => REVIEWS,
+  ).flat();
+  const loop = [...base, ...base];
+  return (
+    <section className="py-24 md:py-32">
+      <div className="px-5">
+        <SectionHeading eyebrow="Bewertungen" title="Was Spieler sagen." />
+      </div>
+      <Reveal className="marquee mt-14 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+        <div className="marquee-track flex w-max gap-4 px-2">
+          {loop.map((r, i) => (
+            <div key={i} aria-hidden={i >= base.length}>
+              <ReviewCard r={r} />
+            </div>
+          ))}
+        </div>
+      </Reveal>
+      <Reveal className="mt-10 flex justify-center px-5">
+        <a {...discordProps} className={btnGhost}>
+          Deine Bewertung auf Discord abgeben <ArrowRight size={18} />
+        </a>
+      </Reveal>
     </section>
   );
 }

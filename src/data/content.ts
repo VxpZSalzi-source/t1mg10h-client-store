@@ -4,8 +4,8 @@
 // ============================================================
 
 // ---------- Links ----------
-// PLATZHALTER: Discord-Einladungslink eintragen
-export const DISCORD_URL = "[DEIN-DISCORD-INVITE]";
+// Discord-Einladungslink
+export const DISCORD_URL = "https://discord.gg/ts37KwHPh";
 
 // Kauf-Buttons öffnen den eingebauten Checkout (Token-System) – kein Link nötig.
 
