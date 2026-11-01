@@ -132,7 +132,69 @@ export const listPurchases = createServerFn({ method: "POST" })
     password: String(input?.password ?? ""),
   }))
   .handler(async ({ data }) => {
-    const adminPw = process.env["ADMIN_PASSWORD"] ?? "admin123";
-    if (data.password !== adminPw) throw new Error("Falsches Passwort");
+    checkAdmin(data.password);
     return { purchases: await listAll() };
+  });
+
+/** Passwort prüfen (zeitkonstant). Ohne gesetztes ADMIN_PASSWORD gilt das Standardpasswort. */
+function checkAdmin(password: string, requireCustom = false) {
+  const custom = process.env["ADMIN_PASSWORD"];
+  if (requireCustom && !custom) {
+    throw new Error("Bitte zuerst ADMIN_PASSWORD in den Lovable-Secrets setzen.");
+  }
+  const expected = custom ?? "admin123";
+  let diff = password.length ^ expected.length;
+  for (let i = 0; i < Math.max(password.length, expected.length); i++) {
+    diff |= (password.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
+  }
+  if (diff !== 0) throw new Error("Falsches Passwort");
+}
+
+export const IGN_PATTERN = /^[A-Za-z0-9_]{3,16}$/;
+
+/** Admin-/Owner-Token: Lifetime, kostenlos, fest an einen Ingame-Namen gebunden. */
+export const createAdminToken = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string; ign: string; note?: string }) => ({
+    password: String(input?.password ?? ""),
+    ign: String(input?.ign ?? "").trim(),
+    note: String(input?.note ?? "")
+      .trim()
+      .slice(0, 60),
+  }))
+  .handler(async ({ data }) => {
+    checkAdmin(data.password, true);
+    if (!IGN_PATTERN.test(data.ign)) {
+      throw new Error("Ungültiger Ingame-Name (3–16 Zeichen: Buchstaben, Zahlen, _)");
+    }
+    const token = generateToken();
+    const purchasedAt = new Date().toISOString();
+    await savePurchase({
+      token,
+      plan: "lifetime",
+      price: "0€",
+      purchasedAt,
+      ign: data.ign,
+      source: "admin",
+      note: data.note || null,
+    });
+
+    // Sicherheits-Benachrichtigung: jeder erstellte Admin-Token landet in Telegram
+    try {
+      const chatId = await resolveChatId();
+      await tg("sendMessage", {
+        chat_id: chatId,
+        parse_mode: "HTML",
+        text:
+          `🛡️ <b>Admin-Token erstellt</b>\n\n` +
+          `👤 Ingame-Name: <b>${esc(data.ign)}</b>\n` +
+          (data.note ? `📝 Notiz: ${esc(data.note)}\n` : "") +
+          `🔑 Token: <code>${token}</code>\n` +
+          `🕒 ${new Date(purchasedAt).toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}\n\n` +
+          `Warst du das nicht? Sofort ADMIN_PASSWORD ändern!`,
+      });
+    } catch {
+      // Telegram-Fehler sollen das Erstellen nicht verhindern
+    }
+
+    return { token, ign: data.ign };
   });

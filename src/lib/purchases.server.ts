@@ -12,6 +12,9 @@ export interface Purchase {
   discordId?: string | null;
   discordUsername?: string | null;
   linkedAt?: string | null;
+  ign?: string | null; // nur bei Admin-Tokens: fester Ingame-Name
+  source?: "shop" | "admin";
+  note?: string | null;
 }
 
 interface Row {
@@ -23,6 +26,9 @@ interface Row {
   discord_id?: string | null;
   discord_username?: string | null;
   linked_at?: string | null;
+  ign?: string | null;
+  source?: "shop" | "admin";
+  note?: string | null;
 }
 
 const toPurchase = (r: Row): Purchase => ({
@@ -34,6 +40,9 @@ const toPurchase = (r: Row): Purchase => ({
   discordId: r.discord_id ?? null,
   discordUsername: r.discord_username ?? null,
   linkedAt: r.linked_at ?? null,
+  ign: r.ign ?? null,
+  source: r.source ?? "shop",
+  note: r.note ?? null,
 });
 
 const memory: Purchase[] = [];
@@ -63,7 +72,7 @@ async function rest(path: string, init: RequestInit = {}) {
 
 export async function savePurchase(p: Omit<Purchase, "redeemedAt">): Promise<void> {
   if (!cfg()) {
-    memory.push({ ...p, redeemedAt: null });
+    memory.push({ source: "shop", ...p, redeemedAt: null });
     return;
   }
   await rest("purchases", {
@@ -73,6 +82,9 @@ export async function savePurchase(p: Omit<Purchase, "redeemedAt">): Promise<voi
       plan: p.plan,
       price: p.price,
       purchased_at: p.purchasedAt,
+      ign: p.ign ?? null,
+      source: p.source ?? "shop",
+      note: p.note ?? null,
     }),
   });
 }

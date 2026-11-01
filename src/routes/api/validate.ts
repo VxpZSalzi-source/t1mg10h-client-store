@@ -11,6 +11,7 @@ export const Route = createFileRoute("/api/validate")({
             .trim()
             .toUpperCase();
           const doRedeem = body?.redeem === true; // Client schickt redeem:true beim ersten Aktivieren
+          const ign = String(body?.ign ?? "").trim(); // Ingame-Name des Spielers (vom Client)
 
           if (!token) {
             return Response.json({ valid: false, error: "Kein Token angegeben" }, { status: 400 });
@@ -19,6 +20,14 @@ export const Route = createFileRoute("/api/validate")({
           let match = await findByToken(token);
           if (!match) {
             return Response.json({ valid: false, error: "Token ungültig" });
+          }
+
+          // Admin-Tokens sind an einen Ingame-Namen gebunden
+          if (match.ign && match.ign.toLowerCase() !== ign.toLowerCase()) {
+            return Response.json({
+              valid: false,
+              error: "Dieser Token gehört zu einem anderen Spieler",
+            });
           }
 
           if (doRedeem) {
