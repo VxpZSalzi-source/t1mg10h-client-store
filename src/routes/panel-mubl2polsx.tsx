@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import {
   createAdminToken,
+  deleteToken,
   IGN_PATTERN,
   listPurchases,
   registerDiscordCommands,
@@ -25,6 +26,28 @@ function AdminPage() {
   const [filterPlan, setFilterPlan] = useState<"all" | "monthly" | "lifetime">("all");
   const [loading, setLoading] = useState(false);
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
+  const removeToken = useServerFn(deleteToken);
+  const [confirmDel, setConfirmDel] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  // Zwei Klicks: erst "Löschen", dann "Wirklich?" (setzt sich nach 4 s zurück)
+  const onDelete = async (token: string) => {
+    if (confirmDel !== token) {
+      setConfirmDel(token);
+      setTimeout(() => setConfirmDel((t) => (t === token ? null : t)), 4000);
+      return;
+    }
+    setDeleting(token);
+    try {
+      await removeToken({ data: { password, token } });
+      setPurchases((list) => (list ?? []).filter((x) => x.token !== token));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Löschen fehlgeschlagen");
+    } finally {
+      setDeleting(null);
+      setConfirmDel(null);
+    }
+  };
 
   const login = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,6 +157,12 @@ function AdminPage() {
           · aktualisiert sich automatisch
         </div>
 
+        {error && (
+          <p className="mt-4 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
         <BotSetup password={password} />
 
         <AdminTokenForm
@@ -193,6 +222,21 @@ function AdminPage() {
                           className="rounded px-2 py-0.5 text-xs border hover:bg-muted transition"
                         >
                           {copiedToken === p.token ? "✓" : "Kopieren"}
+                        </button>
+                        <button
+                          onClick={() => onDelete(p.token)}
+                          disabled={deleting === p.token}
+                          className={`rounded border px-2 py-0.5 text-xs transition disabled:opacity-50 ${
+                            confirmDel === p.token
+                              ? "border-destructive bg-destructive text-white"
+                              : "border-destructive/40 text-destructive hover:bg-destructive/10"
+                          }`}
+                        >
+                          {deleting === p.token
+                            ? "…"
+                            : confirmDel === p.token
+                              ? "Wirklich?"
+                              : "Löschen"}
                         </button>
                       </div>
                     </td>

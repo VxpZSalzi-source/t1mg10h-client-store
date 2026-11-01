@@ -193,3 +193,17 @@ export async function linkToken(
   if (!existing) return "invalid";
   return existing.discordId === discordId ? "already-yours" : "taken";
 }
+
+/** Token endgültig löschen. Gibt false zurück, wenn es ihn nicht gab. */
+export async function deletePurchase(token: string): Promise<boolean> {
+  if (!cfg()) {
+    const i = memory.findIndex((p) => p.token === token);
+    if (i < 0) return false;
+    memory.splice(i, 1);
+    return true;
+  }
+  const rows: Row[] = await rest(`purchases?token=eq.${encodeURIComponent(token)}`, {
+    method: "DELETE",
+  });
+  return rows.length > 0;
+}

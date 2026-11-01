@@ -8,7 +8,7 @@ export const PLANS = {
 } as const;
 export type PlanId = keyof typeof PLANS;
 
-import { savePurchase, listAll, redeem } from "./purchases.server";
+import { savePurchase, listAll, redeem, deletePurchase } from "./purchases.server";
 export type { Purchase } from "./purchases.server";
 
 export function generateToken(): string {
@@ -213,4 +213,27 @@ export const registerDiscordCommands = createServerFn({ method: "POST" })
     checkAdmin(data.password, true);
     const { registerCommands } = await import("./discord-bot.server");
     return { commands: await registerCommands() };
+  });
+
+/** Token im Admin-Panel löschen (danach funktioniert er nirgends mehr). */
+export const deleteToken = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string; token: string }) => ({
+    password: String(input?.password ?? ""),
+    token: String(input?.token ?? "")
+      .trim()
+      .toUpperCase(),
+  }))
+  .handler(async ({ data }) => {
+    checkAdmin(data.password, true);
+    const ok = await deletePurchase(data.token);
+    if (!ok) throw new Error("Token nicht gefunden");
+    try {
+      await sendTelegram(
+        `🗑️ <b>Token gelöscht</b>\n\n🔑 <code>${data.token}</code>\n` +
+          `🕒 ${new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}`,
+      );
+    } catch {
+      // Telegram-Fehler sollen das Löschen nicht verhindern
+    }
+    return { ok: true };
   });
