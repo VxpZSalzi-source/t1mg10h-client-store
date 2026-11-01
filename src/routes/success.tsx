@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { linkToken, loginUrl, useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/success")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -14,6 +15,16 @@ export const Route = createFileRoute("/success")({
 function SuccessPage() {
   const { token } = Route.useSearch();
   const [copied, setCopied] = useState(false);
+  const auth = useAuth();
+  const [linkMsg, setLinkMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const tried = useRef(false);
+
+  // Eingeloggt? Dann Kauf automatisch mit dem Discord-Account verknüpfen
+  useEffect(() => {
+    if (!auth.user || !token || tried.current) return;
+    tried.current = true;
+    linkToken(token).then((r) => setLinkMsg({ ok: r.ok, text: r.message }));
+  }, [auth.user, token]);
 
   const copy = () => {
     navigator.clipboard.writeText(token).then(() => {
@@ -43,11 +54,45 @@ function SuccessPage() {
             {copied ? "✓ Kopiert!" : "Token kopieren"}
           </button>
           <p className="mt-4 text-xs text-muted-foreground">
-            Dieser Token ist dein Zugangsschlüssel. Du erhältst ihn nur einmal – speichere ihn jetzt.
+            Dieser Token ist dein Zugangsschlüssel. Du erhältst ihn nur einmal – speichere ihn
+            jetzt.
           </p>
         </div>
 
-        <Link to="/" className="mt-8 inline-block text-sm text-muted-foreground hover:text-foreground">
+        {auth.enabled && token && (
+          <div className="mt-6 rounded-2xl border bg-card p-6 text-left">
+            {auth.user ? (
+              <p
+                className={`text-sm ${linkMsg && !linkMsg.ok ? "text-destructive" : "text-success"}`}
+              >
+                {linkMsg ? linkMsg.text : "Wird mit deinem Discord-Account verknüpft…"}{" "}
+                {linkMsg?.ok && (
+                  <a href="/konto" className="underline">
+                    Zu meinem Konto
+                  </a>
+                )}
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Verknüpfe den Kauf mit deinem Discord-Account – dann siehst du deine Lizenz
+                  jederzeit unter „Mein Konto“.
+                </p>
+                <a
+                  href={loginUrl(`/success?token=${encodeURIComponent(token)}`)}
+                  className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] py-3 font-semibold transition hover:bg-white/[0.06]"
+                >
+                  Mit Discord verknüpfen
+                </a>
+              </>
+            )}
+          </div>
+        )}
+
+        <Link
+          to="/"
+          className="mt-8 inline-block text-sm text-muted-foreground hover:text-foreground"
+        >
           ← Zurück zur Startseite
         </Link>
       </div>

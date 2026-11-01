@@ -10,14 +10,25 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as KontoRouteImport } from './routes/konto'
 import { Route as PanelMubl2polsxRouteImport } from './routes/panel-mubl2polsx'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
+import { Route as ApiAccountLinkRouteImport } from './routes/api/account/link'
+import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
+import { Route as ApiAuthDiscordRouteImport } from './routes/api/auth/discord'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KontoRoute = KontoRouteImport.update({
+  id: '/konto',
+  path: '/konto',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PanelMubl2polsxRoute = PanelMubl2polsxRouteImport.update({
@@ -40,49 +51,126 @@ const ApiValidateRoute = ApiValidateRouteImport.update({
   path: '/api/validate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAccountLinkRoute = ApiAccountLinkRouteImport.update({
+  id: '/api/account/link',
+  path: '/api/account/link',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
+  id: '/api/auth/callback',
+  path: '/api/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthDiscordRoute = ApiAuthDiscordRouteImport.update({
+  id: '/api/auth/discord',
+  path: '/api/auth/discord',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/konto': typeof KontoRoute
   '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/api/validate': typeof ApiValidateRoute
+  '/api/account/link': typeof ApiAccountLinkRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/discord': typeof ApiAuthDiscordRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/konto': typeof KontoRoute
   '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/api/validate': typeof ApiValidateRoute
+  '/api/account/link': typeof ApiAccountLinkRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/discord': typeof ApiAuthDiscordRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/konto': typeof KontoRoute
   '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/api/validate': typeof ApiValidateRoute
+  '/api/account/link': typeof ApiAccountLinkRoute
+  '/api/auth/callback': typeof ApiAuthCallbackRoute
+  '/api/auth/discord': typeof ApiAuthDiscordRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/panel-mubl2polsx' | '/success' | '/test' | '/api/validate'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/panel-mubl2polsx' | '/success' | '/test' | '/api/validate'
-  id:
-    | '__root__'
+  fullPaths:
     | '/'
+    | '/konto'
     | '/panel-mubl2polsx'
     | '/success'
     | '/test'
     | '/api/validate'
+    | '/api/account/link'
+    | '/api/auth/callback'
+    | '/api/auth/discord'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/konto'
+    | '/panel-mubl2polsx'
+    | '/success'
+    | '/test'
+    | '/api/validate'
+    | '/api/account/link'
+    | '/api/auth/callback'
+    | '/api/auth/discord'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+  id:
+    | '__root__'
+    | '/'
+    | '/konto'
+    | '/panel-mubl2polsx'
+    | '/success'
+    | '/test'
+    | '/api/validate'
+    | '/api/account/link'
+    | '/api/auth/callback'
+    | '/api/auth/discord'
+    | '/api/auth/logout'
+    | '/api/auth/me'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  KontoRoute: typeof KontoRoute
   PanelMubl2polsxRoute: typeof PanelMubl2polsxRoute
   SuccessRoute: typeof SuccessRoute
   TestRoute: typeof TestRoute
   ApiValidateRoute: typeof ApiValidateRoute
+  ApiAccountLinkRoute: typeof ApiAccountLinkRoute
+  ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
+  ApiAuthDiscordRoute: typeof ApiAuthDiscordRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +180,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/konto': {
+      id: '/konto'
+      path: '/konto'
+      fullPath: '/konto'
+      preLoaderRoute: typeof KontoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/panel-mubl2polsx': {
@@ -122,15 +217,56 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiValidateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/account/link': {
+      id: '/api/account/link'
+      path: '/api/account/link'
+      fullPath: '/api/account/link'
+      preLoaderRoute: typeof ApiAccountLinkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/callback': {
+      id: '/api/auth/callback'
+      path: '/api/auth/callback'
+      fullPath: '/api/auth/callback'
+      preLoaderRoute: typeof ApiAuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/discord': {
+      id: '/api/auth/discord'
+      path: '/api/auth/discord'
+      fullPath: '/api/auth/discord'
+      preLoaderRoute: typeof ApiAuthDiscordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  KontoRoute: KontoRoute,
   PanelMubl2polsxRoute: PanelMubl2polsxRoute,
   SuccessRoute: SuccessRoute,
   TestRoute: TestRoute,
   ApiValidateRoute: ApiValidateRoute,
+  ApiAccountLinkRoute: ApiAccountLinkRoute,
+  ApiAuthCallbackRoute: ApiAuthCallbackRoute,
+  ApiAuthDiscordRoute: ApiAuthDiscordRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

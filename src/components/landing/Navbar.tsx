@@ -1,6 +1,7 @@
 import { Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DISCORD_URL, NAV_LINKS } from "@/data/content";
+import { DISCORD_PATH, loginUrl, useAuth } from "@/lib/auth";
 import { btnPrimary } from "./ui";
 
 export function Logo() {
@@ -10,6 +11,42 @@ export function Logo() {
         T
       </span>
       T1mg10h
+    </a>
+  );
+}
+
+/** Login-Button bzw. Profil-Chip (nur sichtbar, wenn der Discord-Login eingerichtet ist). */
+function AccountButton({ full = false, onClick }: { full?: boolean; onClick?: () => void }) {
+  const { loading, enabled, user } = useAuth();
+  if (loading || !enabled) return null;
+  if (user) {
+    return (
+      <a
+        href="/konto"
+        onClick={onClick}
+        className={`inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] py-1.5 pl-1.5 pr-3 text-sm font-medium text-white transition hover:border-white/20 ${full ? "w-full" : ""}`}
+      >
+        {user.avatar ? (
+          <img src={user.avatar} alt="" className="h-7 w-7 rounded-full" />
+        ) : (
+          <span className="grid h-7 w-7 place-items-center rounded-full bg-primary/20 text-xs font-bold text-primary">
+            {user.username.slice(0, 2).toUpperCase()}
+          </span>
+        )}
+        Mein Konto
+      </a>
+    );
+  }
+  return (
+    <a
+      href={loginUrl("/konto")}
+      onClick={onClick}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white transition hover:border-white/20 hover:bg-white/[0.06] ${full ? "w-full" : ""}`}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d={DISCORD_PATH} />
+      </svg>
+      Login
     </a>
   );
 }
@@ -47,7 +84,8 @@ export function Navbar() {
             </li>
           ))}
         </ul>
-        <div className="hidden md:block">
+        <div className="hidden items-center gap-2 md:flex">
+          <AccountButton />
           <a href="#preise" className={`${btnPrimary} px-5 py-2 text-sm`}>
             Jetzt holen
           </a>
@@ -76,6 +114,9 @@ export function Navbar() {
             </li>
           ))}
           <li className="pt-2">
+            <AccountButton full onClick={() => setOpen(false)} />
+          </li>
+          <li className="pt-1">
             <a href="#preise" onClick={() => setOpen(false)} className={`${btnPrimary} w-full`}>
               Jetzt holen
             </a>

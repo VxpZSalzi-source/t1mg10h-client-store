@@ -9,6 +9,9 @@ export interface Purchase {
   price: string;
   purchasedAt: string;
   redeemedAt: string | null;
+  discordId?: string | null;
+  discordUsername?: string | null;
+  linkedAt?: string | null;
 }
 
 interface Row {
@@ -17,6 +20,9 @@ interface Row {
   price: string;
   purchased_at: string;
   redeemed_at: string | null;
+  discord_id?: string | null;
+  discord_username?: string | null;
+  linked_at?: string | null;
 }
 
 const toPurchase = (r: Row): Purchase => ({
@@ -25,6 +31,9 @@ const toPurchase = (r: Row): Purchase => ({
   price: r.price,
   purchasedAt: r.purchased_at,
   redeemedAt: r.redeemed_at,
+  discordId: r.discord_id ?? null,
+  discordUsername: r.discord_username ?? null,
+  linkedAt: r.linked_at ?? null,
 });
 
 const memory: Purchase[] = [];
@@ -99,4 +108,52 @@ export async function redeem(token: string): Promise<Purchase | null> {
     { method: "PATCH", body: JSON.stringify({ redeemed_at: now }) },
   );
   return rows[0] ? toPurchase(rows[0]) : null;
+}
+
+/** Alle Käufe eines Discord-Accounts. */
+export async function listByDiscord(discordId: string): Promise<Purchase[]> {
+  if (!cfg()) {
+    return memory
+      .filter((p) => p.discordId === discordId)
+      .sort((a, b) => b.purchasedAt.localeCompare(a.purchasedAt));
+  }
+  const rows: Row[] = await rest(
+    `purchases?select=*&discord_id=eq.${encodeURIComponent(discordId)}&order=purchased_at.desc`,
+  );
+  return rows.map(toPurchase);
+}
+
+export type LinkResult = "linked" | "already-yours" | "taken" | "invalid";
+
+/** Verknüpft einen Token mit einem Discord-Account – nur wenn er noch keinem gehört. */
+export async function linkToken(
+  token: string,
+  discordId: string,
+  discordUsername: string,
+): Promise<LinkResult> {
+  const now = new Date().toISOString();
+  if (!cfg()) {
+    const p = memory.find((x) => x.token === token);
+    if (!p) return "invalid";
+    if (p.discordId === discordId) return "already-yours";
+    if (p.discordId) return "taken";
+    Object.assign(p, { discordId, discordUsername, linkedAt: now });
+    return "linked";
+  }
+  // Atomar: nur Zeilen ohne Besitzer werden verknüpft
+  const rows: Row[] = await rest(
+    `purchases?token=eq.${encodeURIComponent(token)}&discord_id=is.null`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        discord_id: discordId,
+        discord_username: discordUsername,
+        linked_at: now,
+      }),
+    },
+  );
+  if (rows[0]) return "linked";
+  const existing = await findByToken(token);
+  if (!existing) return "invalid";
+  return existing.discordId === discordId ? "already-yours" : "taken";
 }
