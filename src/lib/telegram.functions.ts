@@ -198,3 +198,12 @@ export const createAdminToken = createServerFn({ method: "POST" })
 
     return { token, ign: data.ign };
   });
+
+/** Discord-Bot: Slash-Befehle (/verify, /lizenz) auf dem Server registrieren. */
+export const registerDiscordCommands = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string }) => ({ password: String(input?.password ?? "") }))
+  .handler(async ({ data }) => {
+    checkAdmin(data.password, true);
+    const { registerCommands } = await import("./discord-bot.server");
+    return { commands: await registerCommands() };
+  });

@@ -5,6 +5,7 @@ import {
   createAdminToken,
   IGN_PATTERN,
   listPurchases,
+  registerDiscordCommands,
   type Purchase,
 } from "@/lib/telegram.functions";
 
@@ -106,6 +107,8 @@ function AdminPage() {
           {purchases.filter((p) => p.source !== "admin").length} Verkäufe ·{" "}
           {purchases.filter((p) => p.source === "admin").length} Admin-Tokens
         </div>
+
+        <BotSetup password={password} />
 
         <AdminTokenForm
           password={password}
@@ -290,5 +293,44 @@ function AdminTokenForm({
         </div>
       )}
     </form>
+  );
+}
+
+function BotSetup({ password }: { password: string }) {
+  const register = useServerFn(registerDiscordCommands);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    setBusy(true);
+    try {
+      const r = await register({ data: { password } });
+      setMsg({ ok: true, text: `Registriert: ${r.commands.join(", ")}` });
+    } catch (err) {
+      setMsg({ ok: false, text: err instanceof Error ? err.message : "Fehler" });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="mt-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-card p-5">
+      <div>
+        <h2 className="font-semibold">Discord-Bot</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Einmalig klicken, damit /verify und /lizenz auf deinem Server erscheinen.
+        </p>
+        {msg && (
+          <p className={`mt-2 text-sm ${msg.ok ? "text-success" : "text-destructive"}`}>
+            {msg.text}
+          </p>
+        )}
+      </div>
+      <button
+        onClick={run}
+        disabled={busy}
+        className="rounded-lg border px-4 py-2 text-sm font-semibold hover:bg-muted disabled:opacity-50"
+      >
+        {busy ? "Registriere…" : "Befehle registrieren"}
+      </button>
+    </div>
   );
 }
