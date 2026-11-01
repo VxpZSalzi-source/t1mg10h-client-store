@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminRouteImport } from './routes/admin'
+import { Route as PanelMubl2polsxRouteImport } from './routes/panel-mubl2polsx'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
@@ -20,9 +20,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminRoute = AdminRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const PanelMubl2polsxRoute = PanelMubl2polsxRouteImport.update({
+  id: '/panel-mubl2polsx',
+  path: '/panel-mubl2polsx',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuccessRoute = SuccessRouteImport.update({
@@ -43,14 +43,14 @@ const ApiValidateRoute = ApiValidateRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/api/validate': typeof ApiValidateRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/api/validate': typeof ApiValidateRoute
@@ -58,22 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/admin': typeof AdminRoute
+  '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/api/validate': typeof ApiValidateRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/admin' | '/success' | '/test' | '/api/validate'
+  fullPaths: '/' | '/panel-mubl2polsx' | '/success' | '/test' | '/api/validate'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin' | '/success' | '/test' | '/api/validate'
-  id: '__root__' | '/' | '/admin' | '/success' | '/test' | '/api/validate'
+  to: '/' | '/panel-mubl2polsx' | '/success' | '/test' | '/api/validate'
+  id:
+    | '__root__'
+    | '/'
+    | '/panel-mubl2polsx'
+    | '/success'
+    | '/test'
+    | '/api/validate'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AdminRoute: typeof AdminRoute
+  PanelMubl2polsxRoute: typeof PanelMubl2polsxRoute
   SuccessRoute: typeof SuccessRoute
   TestRoute: typeof TestRoute
   ApiValidateRoute: typeof ApiValidateRoute
@@ -88,11 +94,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteImport
+    '/panel-mubl2polsx': {
+      id: '/panel-mubl2polsx'
+      path: '/panel-mubl2polsx'
+      fullPath: '/panel-mubl2polsx'
+      preLoaderRoute: typeof PanelMubl2polsxRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/success': {
@@ -121,7 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AdminRoute: AdminRoute,
+  PanelMubl2polsxRoute: PanelMubl2polsxRoute,
   SuccessRoute: SuccessRoute,
   TestRoute: TestRoute,
   ApiValidateRoute: ApiValidateRoute,
