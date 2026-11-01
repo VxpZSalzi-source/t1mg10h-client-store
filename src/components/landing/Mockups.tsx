@@ -8,19 +8,23 @@ import { PlaceholderTag } from "./ui";
 const GUI_COLUMNS: { title: string; modules: { name: string; on?: boolean }[] }[] = [
   {
     title: "Combat",
-    modules: [{ name: "Modul 1", on: true }, { name: "Modul 2" }, { name: "Modul 3", on: true }],
+    modules: [
+      { name: "Auto Totem", on: true },
+      { name: "Crystal Aura" },
+      { name: "Anchor Macro", on: true },
+    ],
   },
-  { title: "Movement", modules: [{ name: "Modul 4" }, { name: "Modul 5", on: true }] },
+  { title: "Movement", modules: [{ name: "Sprint", on: true }, { name: "Auto Elytra" }] },
   {
     title: "Render",
     modules: [
-      { name: "Modul 6", on: true },
-      { name: "Modul 7" },
-      { name: "Modul 8", on: true },
-      { name: "Modul 9" },
+      { name: "ESP", on: true },
+      { name: "Storage ESP" },
+      { name: "Tracers", on: true },
+      { name: "Radar" },
     ],
   },
-  { title: "Client", modules: [{ name: "Modul 12", on: true }, { name: "HUD" }] },
+  { title: "Visuals", modules: [{ name: "Fullbright", on: true }, { name: "Custom Crosshair" }] },
 ];
 
 export function ClickGuiMockup() {
@@ -61,7 +65,7 @@ export function ClickGuiMockup() {
   );
 }
 
-const ARRAY_LIST = ["Modul 6", "Modul 12", "Modul 1", "Modul 3", "Modul 5", "Modul 8"];
+const ARRAY_LIST = ["Auto Totem", "Anchor Macro", "Fullbright", "Tracers", "Sprint", "ESP"];
 
 export function HudMockup() {
   return (

@@ -20,7 +20,6 @@ import {
   MODULES,
   REVIEWS,
   STEPS,
-  type ModuleStatus,
 } from "@/data/content";
 import { PLANS } from "@/lib/telegram.functions";
 import { ClickGuiMockup, HudMockup } from "./Mockups";
@@ -116,18 +115,18 @@ export function Features() {
 }
 
 /* ---------------- 4. Module ---------------- */
-const STATUS_STYLE: Record<ModuleStatus, string> = {
-  Neu: "border-primary/30 bg-primary/10 text-primary",
-  Stabil: "border-success/30 bg-success/10 text-success",
-  Beta: "border-white/10 bg-white/5 text-muted-foreground",
-};
+const INITIAL = 12;
 
 export function Modules() {
   const [cat, setCat] = useState<(typeof MODULE_CATEGORIES)[number]>("Alle");
+  const [showAll, setShowAll] = useState(false);
   const list = useMemo(
     () => (cat === "Alle" ? MODULES : MODULES.filter((m) => m.category === cat)),
     [cat],
   );
+  const visible = showAll ? list : list.slice(0, INITIAL);
+  const count = (c: (typeof MODULE_CATEGORIES)[number]) =>
+    c === "Alle" ? MODULES.length : MODULES.filter((m) => m.category === c).length;
 
   return (
     <section id="module" className="border-y border-white/[0.04] bg-white/[0.01]">
@@ -142,46 +141,54 @@ export function Modules() {
               Module an Bord
             </>
           }
-          text="Filtere nach Kategorie und sieh dir an, was drin ist."
+          text="Filtere nach Kategorie und sieh dir an, was jedes Modul kann."
         />
         <Reveal className="mt-10 flex justify-center">
           <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl border border-white/[0.06] bg-card p-1">
             {MODULE_CATEGORIES.map((c) => (
               <button
                 key={c}
-                onClick={() => setCat(c)}
-                className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300 ${
+                onClick={() => {
+                  setCat(c);
+                  setShowAll(false);
+                }}
+                className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300 ${
                   cat === c
                     ? "bg-primary text-white shadow-glow"
                     : "text-muted-foreground hover:text-white"
                 }`}
               >
                 {c}
+                <span className={`text-xs ${cat === c ? "text-white/70" : "text-white/30"}`}>
+                  {count(c)}
+                </span>
               </button>
             ))}
           </div>
         </Reveal>
-        <div
-          key={cat}
-          className="fade-swap mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
-        >
-          {list.map((m) => (
-            <div
-              key={m.name}
-              className="lift flex items-center justify-between gap-2 rounded-xl border border-white/[0.06] bg-card px-4 py-3.5"
-            >
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium">{m.name}</div>
-                <div className="text-xs text-muted-foreground">{m.category}</div>
+        <div key={cat} className="fade-swap mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {visible.map((m) => (
+            <div key={m.name} className="lift rounded-xl border border-white/[0.06] bg-card p-4">
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                  {m.name}
+                </span>
+                <span className="shrink-0 rounded-md border border-primary/25 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  {m.category}
+                </span>
               </div>
-              <span
-                className={`shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${STATUS_STYLE[m.status]}`}
-              >
-                {m.status}
-              </span>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{m.description}</p>
             </div>
           ))}
         </div>
+        {list.length > INITIAL && (
+          <div className="mt-8 flex justify-center">
+            <button onClick={() => setShowAll((v) => !v)} className={btnGhost}>
+              {showAll ? "Weniger anzeigen" : `Alle ${list.length} Module anzeigen`}
+            </button>
+          </div>
+        )}
       </div>
     </section>
   );
