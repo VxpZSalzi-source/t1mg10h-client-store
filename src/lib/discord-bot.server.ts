@@ -77,7 +77,17 @@ export const removeCustomerRole = (userId: string) => {
 /** Slash-Befehle auf dem Server registrieren (einmalig, über das Admin-Panel). */
 export async function registerCommands() {
   const c = botConfig();
-  if (!c) throw new Error("Bot-Secrets fehlen (siehe Anleitung).");
+  if (!c) {
+    const names = [
+      "DISCORD_CLIENT_ID",
+      "DISCORD_PUBLIC_KEY",
+      "DISCORD_BOT_TOKEN",
+      "DISCORD_GUILD_ID",
+      "DISCORD_CUSTOMER_ROLE_ID",
+    ];
+    const missing = names.filter((n) => !process.env[n]);
+    throw new Error(`Diese Secrets fehlen in Lovable: ${missing.join(", ")}`);
+  }
   const commands = [
     {
       name: "verify",
