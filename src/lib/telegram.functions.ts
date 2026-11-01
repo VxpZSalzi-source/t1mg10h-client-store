@@ -52,7 +52,14 @@ async function resolveChatId(): Promise<string | number> {
   );
 }
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+/** Telegram-Nachricht an dich senden (für Server-Routen). */
+export async function sendTelegram(text: string) {
+  const chatId = await resolveChatId();
+  await tg("sendMessage", { chat_id: chatId, parse_mode: "HTML", text });
+}
+
+export const esc = (s: string) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export const sendTestMessage = createServerFn({ method: "POST" })
   .inputValidator((input: { text?: string }) => ({

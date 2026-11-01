@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { findByToken, redeem } from "@/lib/purchases.server";
+import { findByToken, redeem, touchLastSeen } from "@/lib/purchases.server";
+import { esc, sendTelegram } from "@/lib/telegram.functions";
 
 export const Route = createFileRoute("/api/validate")({
   server: {
@@ -32,9 +33,21 @@ export const Route = createFileRoute("/api/validate")({
 
           if (doRedeem) {
             // Atomar einlösen – schlägt fehl, wenn schon eingelöst
-            const r = await redeem(token);
+            const r = await redeem(token, ign);
             if (!r) return Response.json({ valid: false, error: "Token wurde bereits eingelöst" });
             match = r;
+
+            // Benachrichtigung: Token wurde gerade im Spiel aktiviert
+            await sendTelegram(
+              `🎮 <b>Token im Client aktiviert</b>\n\n` +
+                `👤 Ingame-Name: <b>${esc(ign || "unbekannt")}</b>\n` +
+                `📦 Plan: <b>${match.plan === "lifetime" ? "Lifetime" : "Monatlich"}</b>` +
+                (match.source === "admin" ? " (Admin)" : "") +
+                `\n🔑 Token: <code>${token}</code>\n` +
+                `🕒 ${new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}`,
+            ).catch(() => {});
+          } else {
+            await touchLastSeen(token).catch(() => {});
           }
 
           // Schon eingelöst aber nur Prüfung (kein redeem): gültig für denjenigen der ihn hat

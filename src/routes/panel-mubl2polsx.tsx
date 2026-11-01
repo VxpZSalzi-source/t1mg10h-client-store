@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createAdminToken,
   IGN_PATTERN,
@@ -47,6 +47,27 @@ function AdminPage() {
     });
   };
 
+  // Automatisch alle 20 Sekunden neu laden, damit neue Käufe/Aktivierungen sofort auftauchen
+  const loggedIn = purchases !== null;
+  useEffect(() => {
+    if (!loggedIn) return;
+    const id = setInterval(() => {
+      fetchPurchases({ data: { password } })
+        .then((r) => setPurchases(r.purchases))
+        .catch(() => {});
+    }, 20000);
+    return () => clearInterval(id);
+  }, [loggedIn, password, fetchPurchases]);
+
+  const ago = (iso: string) => {
+    const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+    if (m < 1) return "gerade eben";
+    if (m < 60) return `vor ${m} Min.`;
+    const h = Math.round(m / 60);
+    if (h < 24) return `vor ${h} Std.`;
+    return `vor ${Math.round(h / 24)} Tg.`;
+  };
+
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleString("de-DE", { timeZone: "Europe/Berlin" });
 
@@ -56,7 +77,8 @@ function AdminPage() {
         !search ||
         p.token.toLowerCase().includes(search.toLowerCase()) ||
         p.plan.includes(search.toLowerCase()) ||
-        (p.ign ?? "").toLowerCase().includes(search.toLowerCase());
+        (p.ign ?? "").toLowerCase().includes(search.toLowerCase()) ||
+        (p.redeemedIgn ?? "").toLowerCase().includes(search.toLowerCase());
       const matchPlan = filterPlan === "all" || p.plan === filterPlan;
       return matchSearch && matchPlan;
     }) ?? [];
@@ -90,7 +112,7 @@ function AdminPage() {
 
   return (
     <div className="min-h-screen bg-grid px-4 py-10">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">
             Admin <span className="text-primary">Übersicht</span>
@@ -105,7 +127,11 @@ function AdminPage() {
 
         <div className="mt-2 text-sm text-muted-foreground">
           {purchases.filter((p) => p.source !== "admin").length} Verkäufe ·{" "}
-          {purchases.filter((p) => p.source === "admin").length} Admin-Tokens
+          {purchases.filter((p) => p.source === "admin").length} Admin-Tokens ·{" "}
+          <span className="text-success">
+            {purchases.filter((p) => p.redeemedAt).length} im Client aktiviert
+          </span>{" "}
+          · aktualisiert sich automatisch
         </div>
 
         <BotSetup password={password} />
@@ -141,7 +167,7 @@ function AdminPage() {
               : "Keine Ergebnisse für diese Suche."}
           </div>
         ) : (
-          <div className="mt-6 rounded-xl border bg-card overflow-hidden">
+          <div className="mt-6 overflow-x-auto rounded-xl border bg-card">
             <table className="w-full text-sm">
               <thead className="border-b bg-muted/30">
                 <tr>
@@ -150,6 +176,7 @@ function AdminPage() {
                   <th className="px-4 py-3 text-left font-semibold">Ingame-Name</th>
                   <th className="px-4 py-3 text-left font-semibold">Betrag</th>
                   <th className="px-4 py-3 text-left font-semibold">Datum & Uhrzeit</th>
+                  <th className="px-4 py-3 text-left font-semibold">Im Client aktiviert</th>
                 </tr>
               </thead>
               <tbody>
@@ -187,6 +214,27 @@ function AdminPage() {
                     </td>
                     <td className="px-4 py-3 font-semibold">{p.price}</td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDate(p.purchasedAt)}</td>
+                    <td className="px-4 py-3">
+                      {p.redeemedAt ? (
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="h-2 w-2 rounded-full bg-success" />
+                            <span className="font-mono text-xs">{p.redeemedIgn ?? "–"}</span>
+                            {Date.now() - new Date(p.redeemedAt).getTime() < 10 * 60000 && (
+                              <span className="rounded bg-success/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-success">
+                                Neu
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {formatDate(p.redeemedAt)}
+                            {p.lastSeenAt && <> · zuletzt {ago(p.lastSeenAt)}</>}
+                          </div>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Noch nicht</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

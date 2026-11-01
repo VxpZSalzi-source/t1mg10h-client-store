@@ -15,6 +15,8 @@ export interface Purchase {
   ign?: string | null; // nur bei Admin-Tokens: fester Ingame-Name
   source?: "shop" | "admin";
   note?: string | null;
+  redeemedIgn?: string | null; // Ingame-Name, mit dem der Token aktiviert wurde
+  lastSeenAt?: string | null; // letzter Client-Start
 }
 
 interface Row {
@@ -29,6 +31,8 @@ interface Row {
   ign?: string | null;
   source?: "shop" | "admin";
   note?: string | null;
+  redeemed_ign?: string | null;
+  last_seen_at?: string | null;
 }
 
 const toPurchase = (r: Row): Purchase => ({
@@ -43,6 +47,8 @@ const toPurchase = (r: Row): Purchase => ({
   ign: r.ign ?? null,
   source: r.source ?? "shop",
   note: r.note ?? null,
+  redeemedIgn: r.redeemed_ign ?? null,
+  lastSeenAt: r.last_seen_at ?? null,
 });
 
 const memory: Purchase[] = [];
@@ -106,20 +112,38 @@ export async function findByToken(token: string): Promise<Purchase | null> {
 }
 
 /** Löst Token atomar ein. Gibt null zurück, wenn er nicht existiert oder schon eingelöst ist. */
-export async function redeem(token: string): Promise<Purchase | null> {
+export async function redeem(token: string, ign = ""): Promise<Purchase | null> {
   const now = new Date().toISOString();
   if (!cfg()) {
     const p = memory.find((x) => x.token === token);
     if (!p || p.redeemedAt) return null;
-    p.redeemedAt = now;
+    Object.assign(p, { redeemedAt: now, redeemedIgn: ign || null, lastSeenAt: now });
     return p;
   }
   // Nur Zeilen updaten, die noch nicht eingelöst sind → kein doppeltes Einlösen möglich
   const rows: Row[] = await rest(
     `purchases?token=eq.${encodeURIComponent(token)}&redeemed_at=is.null`,
-    { method: "PATCH", body: JSON.stringify({ redeemed_at: now }) },
+    {
+      method: "PATCH",
+      body: JSON.stringify({ redeemed_at: now, redeemed_ign: ign || null, last_seen_at: now }),
+    },
   );
   return rows[0] ? toPurchase(rows[0]) : null;
+}
+
+/** Merkt sich den letzten Client-Start (für "zuletzt gesehen" im Admin-Panel). */
+export async function touchLastSeen(token: string): Promise<void> {
+  const now = new Date().toISOString();
+  if (!cfg()) {
+    const p = memory.find((x) => x.token === token);
+    if (p) p.lastSeenAt = now;
+    return;
+  }
+  await rest(`purchases?token=eq.${encodeURIComponent(token)}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify({ last_seen_at: now }),
+  });
 }
 
 /** Alle Käufe eines Discord-Accounts. */
