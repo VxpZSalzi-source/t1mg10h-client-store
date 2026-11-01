@@ -8,9 +8,19 @@ export const PLANS = {
 } as const;
 export type PlanId = keyof typeof PLANS;
 
+import { savePurchase, listAll, redeem } from "./purchases.server";
+export type { Purchase } from "./purchases.server";
+
+export function generateToken(): string {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const c = Array.from(bytes, (b) => chars[b % chars.length]).join("");
+  return `T1MG-${c.slice(0, 4)}-${c.slice(4, 8)}-${c.slice(8, 12)}`;
+}
+
 async function tg(method: string, body: unknown) {
-  const lovableKey = process.env['LOVABLE_API_KEY'];
-  const tgKey = process.env['TELEGRAM_API_KEY'];
+  const lovableKey = process.env["LOVABLE_API_KEY"];
+  const tgKey = process.env["TELEGRAM_API_KEY"];
   if (!lovableKey) throw new Error("LOVABLE_API_KEY is not configured");
   if (!tgKey) throw new Error("TELEGRAM_API_KEY is not configured");
   const res = await fetch(`${GATEWAY_URL}/${method}`, {
@@ -30,7 +40,7 @@ async function tg(method: string, body: unknown) {
 }
 
 async function resolveChatId(): Promise<string | number> {
-  const fixed = process.env['TELEGRAM_CHAT_ID'];
+  const fixed = process.env["TELEGRAM_CHAT_ID"];
   if (fixed) return fixed;
   const updates: any[] = await tg("getUpdates", {});
   for (let i = updates.length - 1; i >= 0; i--) {
@@ -42,8 +52,7 @@ async function resolveChatId(): Promise<string | number> {
   );
 }
 
-const esc = (s: string) =>
-  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 export const sendTestMessage = createServerFn({ method: "POST" })
   .inputValidator((input: { text?: string }) => ({
@@ -60,16 +69,18 @@ export const sendTestMessage = createServerFn({ method: "POST" })
   });
 
 export const notifyPurchase = createServerFn({ method: "POST" })
-  .inputValidator((input: { plan: PlanId; ign: string; email: string }) => {
+  .inputValidator((input: { plan: PlanId }) => {
     if (!(input?.plan in PLANS)) throw new Error("Ungültiger Plan");
-    const ign = String(input.ign ?? "").trim().slice(0, 32);
-    const email = String(input.email ?? "").trim().slice(0, 120);
-    if (!ign) throw new Error("Minecraft-Name fehlt");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) throw new Error("Ungültige E-Mail");
-    return { plan: input.plan, ign, email };
+    return { plan: input.plan };
   })
   .handler(async ({ data }) => {
     const plan = PLANS[data.plan];
+    const token = generateToken();
+    const purchasedAt = new Date().toISOString();
+
+    // In Lovable Cloud speichern
+    await savePurchase({ token, plan: data.plan, price: plan.price, purchasedAt });
+
     const chatId = await resolveChatId();
     await tg("sendMessage", {
       chat_id: chatId,
@@ -77,9 +88,51 @@ export const notifyPurchase = createServerFn({ method: "POST" })
       text:
         `💰 <b>Neuer Kauf – T1mg10h Client</b>\n\n` +
         `📦 Plan: <b>${plan.name}</b> (${plan.price})\n` +
-        `🎮 Minecraft: <code>${esc(data.ign)}</code>\n` +
-        `📧 E-Mail: ${esc(data.email)}\n` +
+        `🔑 Token: <code>${token}</code>\n` +
+        `🕒 ${new Date(purchasedAt).toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}`,
+    });
+    return { ok: true, token };
+  });
+
+export const sendTestPurchase = createServerFn({ method: "POST" })
+  .inputValidator((input: { plan: PlanId }) => {
+    if (!(input?.plan in PLANS)) throw new Error("Ungültiger Plan");
+    return { plan: input.plan };
+  })
+  .handler(async ({ data }) => {
+    const plan = PLANS[data.plan];
+    const token = generateToken();
+    const chatId = await resolveChatId();
+    await tg("sendMessage", {
+      chat_id: chatId,
+      parse_mode: "HTML",
+      text:
+        `🧪 <b>TEST-Kauf – T1mg10h Client</b>\n\n` +
+        `📦 Plan: <b>${plan.name}</b> (${plan.price})\n` +
+        `🔑 Token: <code>${token}</code>\n` +
         `🕒 ${new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}`,
     });
-    return { ok: true };
+    return { ok: true, token };
+  });
+
+export const redeemToken = createServerFn({ method: "POST" })
+  .inputValidator((input: { token: string }) => ({
+    token: String(input?.token ?? "")
+      .trim()
+      .toUpperCase(),
+  }))
+  .handler(async ({ data }) => {
+    const purchase = await redeem(data.token);
+    if (!purchase) return { valid: false, error: "Token ungültig oder bereits eingelöst" };
+    return { valid: true, plan: purchase.plan, price: purchase.price };
+  });
+
+export const listPurchases = createServerFn({ method: "POST" })
+  .inputValidator((input: { password: string }) => ({
+    password: String(input?.password ?? ""),
+  }))
+  .handler(async ({ data }) => {
+    const adminPw = process.env["ADMIN_PASSWORD"] ?? "admin123";
+    if (data.password !== adminPw) throw new Error("Falsches Passwort");
+    return { purchases: await listAll() };
   });

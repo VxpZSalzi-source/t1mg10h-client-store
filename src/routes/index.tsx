@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { notifyPurchase, PLANS, type PlanId } from "@/lib/telegram.functions";
@@ -109,16 +109,14 @@ function Index() {
 
 function Checkout({ plan, onClose }: { plan: PlanId; onClose: () => void }) {
   const send = useServerFn(notifyPurchase);
-  const [ign, setIgn] = useState("");
-  const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "loading" | "done" | string>("idle");
+  const navigate = useNavigate();
+  const [state, setState] = useState<"idle" | "loading" | string>("idle");
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submit = async () => {
     setState("loading");
     try {
-      await send({ data: { plan, ign, email } });
-      setState("done");
+      const result = await send({ data: { plan } });
+      navigate({ to: "/success", search: { token: result.token } });
     } catch (err) {
       setState(err instanceof Error ? err.message : "Fehler");
     }
@@ -127,24 +125,25 @@ function Checkout({ plan, onClose }: { plan: PlanId; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 px-4 backdrop-blur" onClick={onClose}>
       <div className="w-full max-w-md rounded-2xl border bg-card p-8" onClick={(e) => e.stopPropagation()}>
-        {state === "done" ? (
-          <div className="text-center">
-            <div className="text-5xl">✅</div>
-            <h3 className="mt-4 text-2xl font-bold">Bestellung erhalten!</h3>
-            <p className="mt-2 text-muted-foreground">Wir melden uns per E-Mail bei dir.</p>
-            <button onClick={onClose} className="mt-6 rounded-lg bg-primary px-6 py-2 font-semibold text-primary-foreground">Schließen</button>
-          </div>
-        ) : (
-          <form onSubmit={submit} className="space-y-4">
-            <h3 className="text-2xl font-bold">{PLANS[plan].name} – {PLANS[plan].price}</h3>
-            <input required value={ign} onChange={(e) => setIgn(e.target.value)} placeholder="Minecraft-Name" className="w-full rounded-lg border bg-input/30 px-4 py-3 outline-none focus:border-primary" />
-            <input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="E-Mail" className="w-full rounded-lg border bg-input/30 px-4 py-3 outline-none focus:border-primary" />
-            {state !== "idle" && state !== "loading" && <p className="text-sm text-destructive">{state}</p>}
-            <button disabled={state === "loading"} className="w-full rounded-lg bg-primary py-3 font-semibold text-primary-foreground disabled:opacity-50">
-              {state === "loading" ? "Wird gesendet…" : "Kauf bestätigen"}
-            </button>
-          </form>
+        <h3 className="text-2xl font-bold">{PLANS[plan].name} – {PLANS[plan].price}</h3>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Mit einem Klick auf „Jetzt kaufen" erhältst du deinen persönlichen Lizenz-Token.
+        </p>
+        {state !== "idle" && state !== "loading" && (
+          <p className="mt-3 text-sm text-destructive">{state}</p>
         )}
+        <div className="mt-6 flex gap-3">
+          <button onClick={onClose} className="flex-1 rounded-lg border py-3 font-semibold hover:bg-muted">
+            Abbrechen
+          </button>
+          <button
+            disabled={state === "loading"}
+            onClick={submit}
+            className="flex-1 rounded-lg bg-primary py-3 font-semibold text-primary-foreground disabled:opacity-50"
+          >
+            {state === "loading" ? "Wird verarbeitet…" : "Jetzt kaufen"}
+          </button>
+        </div>
       </div>
     </div>
   );

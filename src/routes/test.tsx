@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { notifyPurchase, sendTestMessage } from "@/lib/telegram.functions";
+import { sendTestMessage, sendTestPurchase } from "@/lib/telegram.functions";
 
 export const Route = createFileRoute("/test")({
   head: () => ({
@@ -19,16 +19,17 @@ export const Route = createFileRoute("/test")({
 
 function TestPage() {
   const sendTest = useServerFn(sendTestMessage);
-  const sendBuy = useServerFn(notifyPurchase);
+  const sendBuy = useServerFn(sendTestPurchase);
   const [text, setText] = useState("Telegram funktioniert!");
   const [log, setLog] = useState<{ ok: boolean; msg: string }[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const run = async (label: string, fn: () => Promise<unknown>) => {
+  const run = async (label: string, fn: () => Promise<any>) => {
     setBusy(true);
     try {
-      await fn();
-      setLog((l) => [{ ok: true, msg: `${label}: gesendet ✓` }, ...l]);
+      const result = await fn();
+      const tokenInfo = result?.token ? ` | Token: ${result.token}` : "";
+      setLog((l) => [{ ok: true, msg: `${label}: gesendet ✓${tokenInfo}` }, ...l]);
     } catch (e) {
       setLog((l) => [{ ok: false, msg: `${label}: ${e instanceof Error ? e.message : "Fehler"}` }, ...l]);
     } finally {
@@ -54,18 +55,19 @@ function TestPage() {
             <button disabled={busy} onClick={() => run("Testnachricht", () => sendTest({ data: { text } }))} className={`${btn} bg-primary text-primary-foreground`}>
               Test senden
             </button>
-            <button disabled={busy} onClick={() => run("Kauf Monatlich", () => sendBuy({ data: { plan: "monthly", ign: "TestSpieler", email: "test@example.com" } }))} className={`${btn} bg-secondary hover:bg-muted`}>
+            <button disabled={busy} onClick={() => run("TEST-Kauf Monatlich", () => sendBuy({ data: { plan: "monthly" } }))} className={`${btn} bg-secondary hover:bg-muted`}>
               Kauf Monatlich
             </button>
-            <button disabled={busy} onClick={() => run("Kauf Lifetime", () => sendBuy({ data: { plan: "lifetime", ign: "TestSpieler", email: "test@example.com" } }))} className={`${btn} bg-secondary hover:bg-muted`}>
+            <button disabled={busy} onClick={() => run("TEST-Kauf Lifetime", () => sendBuy({ data: { plan: "lifetime" } }))} className={`${btn} bg-secondary hover:bg-muted`}>
               Kauf Lifetime
             </button>
           </div>
+          <p className="text-xs text-muted-foreground">Test-Käufe generieren echte Token-Formate, werden aber nicht im Store gespeichert.</p>
         </div>
 
         <div className="mt-6 space-y-2">
           {log.map((l, i) => (
-            <div key={i} className={`rounded-lg border px-4 py-2 text-sm ${l.ok ? "border-primary/40 text-primary" : "border-destructive/40 text-destructive"}`}>
+            <div key={i} className={`rounded-lg border px-4 py-2 text-sm font-mono ${l.ok ? "border-primary/40 text-primary" : "border-destructive/40 text-destructive"}`}>
               {l.msg}
             </div>
           ))}
