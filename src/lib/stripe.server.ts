@@ -154,7 +154,8 @@ async function notifyPurchase(p: Purchase, test: boolean, amount: number, d?: Di
 
 async function notifyCoupon(code: string, user: string | null, plan: PlanId) {
   const config = await getConfig();
-  if (!config.telegram.coupons) return;
+  // Kauf-Nachricht enthält den Code schon → nur separat senden, wenn Kauf-Nachrichten aus sind
+  if (!config.telegram.coupons || config.telegram.purchase) return;
   await sendTelegram(
     `🎟️ <b>Gutscheincode eingelöst</b>\n\nCode: <code>${esc(code)}</code>\nPlan: ${PLANS[plan].name}` +
       (user ? `\nDiscord: ${esc(user)}` : ""),
