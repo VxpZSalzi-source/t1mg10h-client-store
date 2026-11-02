@@ -31,8 +31,10 @@ export const Route = createFileRoute("/api/checkout/status")({
             },
             noStore,
           );
-        } catch {
-          return Response.json({ status: "error" }, { status: 500 });
+        } catch (e) {
+          const message = e instanceof Error ? e.message : String(e);
+          console.error("checkout/status", id, message);
+          return Response.json({ status: "error", message }, { status: 500 });
         }
       },
     },
