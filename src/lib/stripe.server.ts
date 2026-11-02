@@ -105,6 +105,8 @@ export async function createCheckoutSession(q: PriceQuote, user: Buyer): Promise
       plan: q.plan,
       coupon: q.couponCode ?? "",
       promo_percent: String(q.promoPercent),
+      coupon_percent: String(q.couponPercent),
+      base_cents: String(q.base),
       discord_id: user?.id ?? "",
       discord_username: user?.username ?? "",
     },
@@ -120,15 +122,30 @@ async function expiresFor(plan: PlanId) {
   return new Date(Date.now() + monthlyDays * 864e5).toISOString();
 }
 
-async function notifyPurchase(p: Purchase, test: boolean, amount: number) {
+interface Discount {
+  base: number | null;
+  promoPercent: number;
+  couponPercent: number;
+}
+
+async function notifyPurchase(p: Purchase, test: boolean, amount: number, d?: Discount) {
   const config = await getConfig();
   if (!config.telegram.purchase) return;
+  const lines: string[] = [];
+  if (d?.base != null && d.base !== amount) lines.push(`🏷️ Normalpreis: ${euro(d.base)}`);
+  if (d?.promoPercent) lines.push(`🔥 Aktion: −${d.promoPercent} %`);
+  if (p.couponCode) {
+    lines.push(
+      `🎟️ Code: <code>${esc(p.couponCode)}</code>` +
+        (d?.couponPercent ? ` (−${d.couponPercent} %)` : ""),
+    );
+  }
+  if (d?.base != null && d.base > amount) lines.push(`💸 Ersparnis: ${euro(d.base - amount)}`);
   await sendTelegram(
     `💰 <b>Neuer Kauf${test ? " (TEST)" : ""}</b>\n\n` +
       `📦 Plan: <b>${PLANS[p.plan].name}</b>\n` +
-      `💶 Betrag: <b>${euro(amount)}</b>` +
-      (p.couponCode ? ` · Code <code>${esc(p.couponCode)}</code>` : "") +
-      `\n` +
+      (lines.length ? lines.join("\n") + "\n" : "") +
+      `💶 Bezahlt: <b>${euro(amount)}</b>\n` +
       (p.discordUsername ? `👤 Discord: ${esc(p.discordUsername)}\n` : "") +
       `🔑 Token: <code>${p.token}</code>\n` +
       `🕒 ${new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}`,
@@ -192,7 +209,13 @@ export async function fulfillSession(session: StripeSession): Promise<Purchase |
     target: created.token,
     details: { plan, amount, coupon },
   });
-  await notifyPurchase(created, !session.livemode, amount);
+  const md = session.metadata ?? {};
+  const baseMd = Number(md["base_cents"]);
+  await notifyPurchase(created, !session.livemode, amount, {
+    base: Number.isFinite(baseMd) && md["base_cents"] ? baseMd : null,
+    promoPercent: Number(md["promo_percent"]) || 0,
+    couponPercent: Number(md["coupon_percent"]) || 0,
+  });
   return created;
 }
 
@@ -224,7 +247,11 @@ export async function fulfillFree(q: PriceQuote, user: Buyer): Promise<Purchase 
     details: { plan: q.plan, coupon: q.couponCode, promoPercent: q.promoPercent },
   });
   if (q.couponCode) await notifyCoupon(q.couponCode, user?.username ?? null, q.plan);
-  await notifyPurchase(p, false, 0);
+  await notifyPurchase(p, false, 0, {
+    base: q.base,
+    promoPercent: q.promoPercent,
+    couponPercent: q.couponPercent,
+  });
   return p;
 }
 
