@@ -22,7 +22,6 @@ export const Route = createFileRoute("/api/reviews")({
       },
 
       POST: async ({ request }) => {
-        if (await rateLimited("link", request)) return tooMany();
         const user = await getSessionUser(request).catch(() => null);
         if (!user) return fail("Bitte zuerst mit Discord anmelden.", 401);
         const body = (await request.json().catch(() => ({}))) as Record<string, unknown>;
@@ -42,6 +41,7 @@ export const Route = createFileRoute("/api/reviews")({
         }
 
         if (action !== "save") return fail("Unbekannte Aktion", 400);
+        if (await rateLimited("link", request)) return tooMany();
         if (!(await isCustomer(user.id))) {
           return fail("Nur Käufer können bewerten. Verknüpfe zuerst deinen Token im Konto.");
         }
