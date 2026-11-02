@@ -141,11 +141,6 @@ function PriceCard({
           {p.promo && (
             <div className="text-sm text-muted-foreground">
               <span className="line-through">{euro(p.base)}</span>
-              {p.lowest30 < p.base && (
-                <span className="ml-2 text-xs">
-                  niedrigster Preis der letzten 30 Tage: {euro(p.lowest30)}
-                </span>
-              )}
             </div>
           )}
           <p className="flex items-baseline gap-2">
