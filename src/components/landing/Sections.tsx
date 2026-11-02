@@ -303,12 +303,13 @@ export function Changelog() {
 
 /* ---------------- 9. Bewertungen ---------------- */
 // Echte Bewertungen von Käufern (im Konto abgegeben, vom Owner freigegeben)
-interface Review {
+export interface Review {
   name: string;
   avatar: string | null;
   stars: number;
   text: string;
   date: string;
+  test?: boolean;
 }
 
 function ReviewCard({ r }: { r: Review }) {
@@ -344,9 +345,36 @@ function ReviewCard({ r }: { r: Review }) {
         {r.text}
       </blockquote>
       <figcaption className="mt-4 text-xs text-muted-foreground/70">
-        Verifizierter Käufer
+        {r.test ? "Testbewertung (nur Vorschau)" : "Verifizierter Käufer"}
       </figcaption>
     </figure>
+  );
+}
+
+/** Ab 3 Bewertungen als Laufband von rechts nach links (mind. 6 Karten pro Durchlauf,
+ *  doppelt gerendert für eine nahtlose Schleife), darunter fest nebeneinander. */
+export function ReviewStrip({ list }: { list: Review[] }) {
+  if (list.length < 3) {
+    return (
+      <div className="flex flex-wrap justify-center gap-4 px-5">
+        {list.map((r, i) => (
+          <ReviewCard key={i} r={r} />
+        ))}
+      </div>
+    );
+  }
+  const base = Array.from({ length: Math.ceil(6 / list.length) }, () => list).flat();
+  const loop = [...base, ...base];
+  return (
+    <div className="marquee [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+      <div className="marquee-track flex w-max gap-4 px-2">
+        {loop.map((r, i) => (
+          <div key={i} aria-hidden={i >= base.length}>
+            <ReviewCard r={r} />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -361,12 +389,6 @@ export function Reviews() {
 
   const list = reviews ?? [];
   const avg = list.length ? list.reduce((a, r) => a + r.stars, 0) / list.length : 0;
-  // Ab 3 Bewertungen als Laufband (mind. 6 Karten pro Durchlauf, doppelt für nahtlose Schleife)
-  const marquee = list.length >= 3;
-  const base = marquee
-    ? Array.from({ length: Math.ceil(6 / list.length) }, () => list).flat()
-    : list;
-  const loop = marquee ? [...base, ...base] : base;
 
   return (
     <section className="py-24 md:py-32">
@@ -395,22 +417,9 @@ export function Reviews() {
           </div>
         </Reveal>
       )}
-      {list.length > 0 && marquee && (
-        <Reveal className="marquee mt-14 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
-          <div className="marquee-track flex w-max gap-4 px-2">
-            {loop.map((r, i) => (
-              <div key={i} aria-hidden={i >= base.length}>
-                <ReviewCard r={r} />
-              </div>
-            ))}
-          </div>
-        </Reveal>
-      )}
-      {list.length > 0 && !marquee && (
-        <Reveal className="mt-14 flex flex-wrap justify-center gap-4 px-5">
-          {list.map((r, i) => (
-            <ReviewCard key={i} r={r} />
-          ))}
+      {list.length > 0 && (
+        <Reveal className="mt-14">
+          <ReviewStrip list={list} />
         </Reveal>
       )}
       <Reveal className="mt-10 flex justify-center px-5">
