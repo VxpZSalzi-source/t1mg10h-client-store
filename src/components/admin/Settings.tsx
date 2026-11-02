@@ -137,7 +137,8 @@ interface Config {
     | "adminLogin"
     | "warnings"
     | "coupons"
-    | "promotions",
+    | "promotions"
+    | "reviews",
     boolean
   >;
   admins: { id: string; name: string }[];
@@ -159,6 +160,7 @@ const TG_LABELS: Record<keyof Config["telegram"], string> = {
   warnings: "Sicherheitswarnungen (Rate-Limits)",
   coupons: "Gutschein-Einlösungen",
   promotions: "Start/Ende von Aktionen",
+  reviews: "Neue Bewertungen",
 };
 
 function Toggle({

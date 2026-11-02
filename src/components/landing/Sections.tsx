@@ -10,7 +10,7 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CHANGELOG,
   DISCORD_URL,
@@ -18,12 +18,11 @@ import {
   HERO,
   MODULE_CATEGORIES,
   MODULES,
-  REVIEWS,
   STEPS,
 } from "@/data/content";
 import { PLANS } from "@/lib/plans";
 import { ClickGuiMockup } from "./Mockups";
-import { btnGhost, btnPrimary, Counter, PlaceholderTag, Reveal, SectionHeading } from "./ui";
+import { btnGhost, btnPrimary, Counter, Reveal, SectionHeading } from "./ui";
 
 const discordProps = DISCORD_URL.startsWith("http")
   ? { href: DISCORD_URL, target: "_blank", rel: "noreferrer" }
@@ -303,25 +302,34 @@ export function Changelog() {
 }
 
 /* ---------------- 9. Bewertungen ---------------- */
-type Review = (typeof REVIEWS)[number];
+// Echte Bewertungen von Käufern (im Konto abgegeben, vom Owner freigegeben)
+interface Review {
+  name: string;
+  avatar: string | null;
+  stars: number;
+  text: string;
+  date: string;
+}
 
 function ReviewCard({ r }: { r: Review }) {
-  const empty = !r.name && !r.text;
   return (
-    <figure
-      className={`w-[300px] shrink-0 rounded-2xl border bg-card p-6 sm:w-[340px] ${empty ? "border-dashed border-white/10" : "border-white/[0.06]"}`}
-    >
+    <figure className="w-[300px] shrink-0 rounded-2xl border border-white/[0.06] bg-card p-6 sm:w-[340px]">
       <div className="flex items-center gap-3">
         {r.avatar ? (
-          <img src={r.avatar} alt={r.name} className="h-10 w-10 rounded-full object-cover" />
+          <img
+            src={r.avatar}
+            alt=""
+            loading="lazy"
+            className="h-10 w-10 rounded-full object-cover"
+          />
         ) : (
           <span className="grid h-10 w-10 place-items-center rounded-full bg-white/5 text-sm font-semibold text-muted-foreground">
             {r.name ? r.name.slice(0, 2).toUpperCase() : <User size={18} />}
           </span>
         )}
         <div>
-          <div className="text-sm font-semibold">{r.name || "Name folgt"}</div>
-          <div className="mt-0.5 flex gap-0.5">
+          <div className="text-sm font-semibold">{r.name}</div>
+          <div className="mt-0.5 flex gap-0.5" aria-label={`${r.stars} von 5 Sternen`}>
             {Array.from({ length: 5 }).map((_, s) => (
               <Star
                 key={s}
@@ -333,42 +341,81 @@ function ReviewCard({ r }: { r: Review }) {
         </div>
       </div>
       <blockquote className="mt-4 text-sm leading-relaxed text-muted-foreground">
-        {r.text || "Bewertung folgt."}
+        {r.text}
       </blockquote>
-      {empty && (
-        <div className="mt-4">
-          <PlaceholderTag />
-        </div>
-      )}
+      <figcaption className="mt-4 text-xs text-muted-foreground/70">
+        Verifizierter Käufer
+      </figcaption>
     </figure>
   );
 }
 
 export function Reviews() {
-  // Mindestens 6 Karten pro Durchlauf (auch auf breiten Bildschirmen keine Lücke),
-  // dann doppelt rendern, damit das Laufband nahtlos von rechts nach links läuft.
-  const base = Array.from(
-    { length: Math.max(1, Math.ceil(6 / REVIEWS.length)) },
-    () => REVIEWS,
-  ).flat();
-  const loop = [...base, ...base];
+  const [reviews, setReviews] = useState<Review[] | null>(null);
+  useEffect(() => {
+    fetch("/api/reviews")
+      .then((r) => r.json())
+      .then((d) => setReviews(Array.isArray(d.reviews) ? d.reviews : []))
+      .catch(() => setReviews([]));
+  }, []);
+
+  const list = reviews ?? [];
+  const avg = list.length ? list.reduce((a, r) => a + r.stars, 0) / list.length : 0;
+  // Ab 3 Bewertungen als Laufband (mind. 6 Karten pro Durchlauf, doppelt für nahtlose Schleife)
+  const marquee = list.length >= 3;
+  const base = marquee
+    ? Array.from({ length: Math.ceil(6 / list.length) }, () => list).flat()
+    : list;
+  const loop = marquee ? [...base, ...base] : base;
+
   return (
     <section className="py-24 md:py-32">
       <div className="px-5">
         <SectionHeading eyebrow="Bewertungen" title="Was Spieler sagen." />
+        {list.length > 0 && (
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            <Star size={14} className="mr-1 inline fill-primary text-primary" />
+            {avg.toFixed(1).replace(".", ",")} von 5 · {list.length}{" "}
+            {list.length === 1 ? "Bewertung" : "Bewertungen"} von verifizierten Käufern
+          </p>
+        )}
       </div>
-      <Reveal className="marquee mt-14 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
-        <div className="marquee-track flex w-max gap-4 px-2">
-          {loop.map((r, i) => (
-            <div key={i} aria-hidden={i >= base.length}>
-              <ReviewCard r={r} />
+      {reviews && list.length === 0 && (
+        <Reveal className="mx-auto mt-14 max-w-md px-5">
+          <div className="rounded-2xl border border-dashed border-white/10 bg-card p-8 text-center">
+            <div className="flex justify-center gap-0.5">
+              {Array.from({ length: 5 }).map((_, s) => (
+                <Star key={s} size={18} className="text-white/15" />
+              ))}
             </div>
+            <p className="mt-4 font-semibold">Noch keine Bewertungen</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Du nutzt den Client schon? Sei der Erste und bewerte ihn in deinem Konto.
+            </p>
+          </div>
+        </Reveal>
+      )}
+      {list.length > 0 && marquee && (
+        <Reveal className="marquee mt-14 [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
+          <div className="marquee-track flex w-max gap-4 px-2">
+            {loop.map((r, i) => (
+              <div key={i} aria-hidden={i >= base.length}>
+                <ReviewCard r={r} />
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      )}
+      {list.length > 0 && !marquee && (
+        <Reveal className="mt-14 flex flex-wrap justify-center gap-4 px-5">
+          {list.map((r, i) => (
+            <ReviewCard key={i} r={r} />
           ))}
-        </div>
-      </Reveal>
+        </Reveal>
+      )}
       <Reveal className="mt-10 flex justify-center px-5">
-        <a {...discordProps} className={btnGhost}>
-          Deine Bewertung auf Discord abgeben <ArrowRight size={18} />
+        <a href="/konto#bewertung" className={btnGhost}>
+          Deine Bewertung abgeben <ArrowRight size={18} />
         </a>
       </Reveal>
     </section>

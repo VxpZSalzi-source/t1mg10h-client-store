@@ -20,6 +20,7 @@ import { Route as TestRouteImport } from './routes/test'
 import { Route as WiderrufRouteImport } from './routes/widerruf'
 import { Route as ApiAdminRouteImport } from './routes/api/admin'
 import { Route as ApiPricingRouteImport } from './routes/api/pricing'
+import { Route as ApiReviewsRouteImport } from './routes/api/reviews'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiAccountLinkRouteImport } from './routes/api/account/link'
 import { Route as ApiAccountResetIgnRouteImport } from './routes/api/account/reset-ign'
@@ -87,6 +88,11 @@ const ApiAdminRoute = ApiAdminRouteImport.update({
 const ApiPricingRoute = ApiPricingRouteImport.update({
   id: '/api/pricing',
   path: '/api/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiReviewsRoute = ApiReviewsRouteImport.update({
+  id: '/api/reviews',
+  path: '/api/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiValidateRoute = ApiValidateRouteImport.update({
@@ -167,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/widerruf': typeof WiderrufRoute
   '/api/admin': typeof ApiAdminRoute
   '/api/pricing': typeof ApiPricingRoute
+  '/api/reviews': typeof ApiReviewsRoute
   '/api/validate': typeof ApiValidateRoute
   '/api/account/link': typeof ApiAccountLinkRoute
   '/api/account/reset-ign': typeof ApiAccountResetIgnRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/widerruf': typeof WiderrufRoute
   '/api/admin': typeof ApiAdminRoute
   '/api/pricing': typeof ApiPricingRoute
+  '/api/reviews': typeof ApiReviewsRoute
   '/api/validate': typeof ApiValidateRoute
   '/api/account/link': typeof ApiAccountLinkRoute
   '/api/account/reset-ign': typeof ApiAccountResetIgnRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/widerruf': typeof WiderrufRoute
   '/api/admin': typeof ApiAdminRoute
   '/api/pricing': typeof ApiPricingRoute
+  '/api/reviews': typeof ApiReviewsRoute
   '/api/validate': typeof ApiValidateRoute
   '/api/account/link': typeof ApiAccountLinkRoute
   '/api/account/reset-ign': typeof ApiAccountResetIgnRoute
@@ -248,6 +257,7 @@ export interface FileRouteTypes {
     | '/widerruf'
     | '/api/admin'
     | '/api/pricing'
+    | '/api/reviews'
     | '/api/validate'
     | '/api/account/link'
     | '/api/account/reset-ign'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/widerruf'
     | '/api/admin'
     | '/api/pricing'
+    | '/api/reviews'
     | '/api/validate'
     | '/api/account/link'
     | '/api/account/reset-ign'
@@ -300,6 +311,7 @@ export interface FileRouteTypes {
     | '/widerruf'
     | '/api/admin'
     | '/api/pricing'
+    | '/api/reviews'
     | '/api/validate'
     | '/api/account/link'
     | '/api/account/reset-ign'
@@ -327,6 +339,7 @@ export interface RootRouteChildren {
   WiderrufRoute: typeof WiderrufRoute
   ApiAdminRoute: typeof ApiAdminRoute
   ApiPricingRoute: typeof ApiPricingRoute
+  ApiReviewsRoute: typeof ApiReviewsRoute
   ApiValidateRoute: typeof ApiValidateRoute
   ApiAccountLinkRoute: typeof ApiAccountLinkRoute
   ApiAccountResetIgnRoute: typeof ApiAccountResetIgnRoute
@@ -419,6 +432,13 @@ declare module '@tanstack/react-router' {
       path: '/api/pricing'
       fullPath: '/api/pricing'
       preLoaderRoute: typeof ApiPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/reviews': {
+      id: '/api/reviews'
+      path: '/api/reviews'
+      fullPath: '/api/reviews'
+      preLoaderRoute: typeof ApiReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/validate': {
@@ -527,6 +547,7 @@ const rootRouteChildren: RootRouteChildren = {
   WiderrufRoute: WiderrufRoute,
   ApiAdminRoute: ApiAdminRoute,
   ApiPricingRoute: ApiPricingRoute,
+  ApiReviewsRoute: ApiReviewsRoute,
   ApiValidateRoute: ApiValidateRoute,
   ApiAccountLinkRoute: ApiAccountLinkRoute,
   ApiAccountResetIgnRoute: ApiAccountResetIgnRoute,

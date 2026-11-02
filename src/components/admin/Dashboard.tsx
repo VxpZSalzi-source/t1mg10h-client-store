@@ -39,6 +39,11 @@ export const ACTION_LABELS: Record<string, string> = {
   coupon_delete: "Gutschein gelöscht",
   roles_removed: "Discord-Rollen entfernt",
   admin_path_rotate: "Admin-Adresse geändert",
+  review_submit: "Bewertung abgegeben",
+  review_approved: "Bewertung freigegeben",
+  review_rejected: "Bewertung abgelehnt",
+  review_pending: "Bewertung zurückgestellt",
+  review_delete: "Bewertung gelöscht",
 };
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {

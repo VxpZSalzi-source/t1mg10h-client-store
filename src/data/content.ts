@@ -451,15 +451,6 @@ export const PRICING = {
   },
 };
 
-// ---------- Bewertungen ----------
-// PLATZHALTER: echte Bewertungen eintragen. Leere Einträge zeigen "Bewertung folgt".
-// avatar: Bild-URL oder leer lassen (dann werden Initialen angezeigt). stars: 1–5
-export const REVIEWS: { name: string; avatar?: string; stars: number; text: string }[] = [
-  { name: "", stars: 0, text: "" },
-  { name: "", stars: 0, text: "" },
-  { name: "", stars: 0, text: "" },
-];
-
 // ---------- Footer ----------
 export const FOOTER_LINKS = [
   {

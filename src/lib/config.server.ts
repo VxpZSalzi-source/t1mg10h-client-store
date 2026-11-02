@@ -33,6 +33,7 @@ export interface AppConfig {
     warnings: boolean;
     coupons: boolean;
     promotions: boolean;
+    reviews: boolean;
   };
   admins: { id: string; name: string }[];
 }
@@ -63,6 +64,7 @@ export const DEFAULT_CONFIG: AppConfig = {
     warnings: true,
     coupons: true,
     promotions: true,
+    reviews: true,
   },
   admins: [],
 };

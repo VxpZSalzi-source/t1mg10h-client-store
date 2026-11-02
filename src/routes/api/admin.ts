@@ -31,6 +31,7 @@ import {
   savePurchase,
   type Purchase,
 } from "@/lib/purchases.server";
+import { deleteReview, listAllReviews, setReviewStatus } from "@/lib/reviews.server";
 import { esc, generateToken, sendTelegram } from "@/lib/telegram.functions";
 
 type Body = Record<string, unknown>;
@@ -158,6 +159,7 @@ function sanitizeConfig(input: unknown, current: AppConfig): AppConfig {
       warnings: t("warnings"),
       coupons: t("coupons"),
       promotions: t("promotions"),
+      reviews: t("reviews"),
     },
     admins: Array.isArray(c.admins)
       ? c.admins
@@ -186,6 +188,9 @@ const OWNER_ONLY = new Set([
   "createCoupon",
   "toggleCoupon",
   "deleteCoupon",
+  "reviews",
+  "reviewStatus",
+  "deleteReview",
   "registerCommands",
   "testTelegram",
   "rotatePath",
@@ -418,6 +423,40 @@ const actions: Record<string, Handler> = {
       actor_id: a.id,
       actor_name: a.username,
       target: code,
+      ip: clientIp(req),
+    });
+    return ok();
+  },
+
+  reviews: async () => ok({ reviews: await listAllReviews() }),
+
+  reviewStatus: async (a, b, req) => {
+    const id = str(b["id"], 40);
+    const status = str(b["status"], 10);
+    if (status !== "approved" && status !== "rejected" && status !== "pending") {
+      return fail("Ungültiger Status");
+    }
+    await setReviewStatus(id, status);
+    await audit({
+      kind: "admin",
+      action: `review_${status}`,
+      actor_id: a.id,
+      actor_name: a.username,
+      target: id,
+      ip: clientIp(req),
+    });
+    return ok();
+  },
+
+  deleteReview: async (a, b, req) => {
+    const id = str(b["id"], 40);
+    await deleteReview(id);
+    await audit({
+      kind: "admin",
+      action: "review_delete",
+      actor_id: a.id,
+      actor_name: a.username,
+      target: id,
       ip: clientIp(req),
     });
     return ok();

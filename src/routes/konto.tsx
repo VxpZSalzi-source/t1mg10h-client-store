@@ -1,6 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Copy, Eye, EyeOff, KeyRound, LogOut, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import {
+  ArrowLeft,
+  Check,
+  Copy,
+  Eye,
+  EyeOff,
+  KeyRound,
+  LogOut,
+  ShieldCheck,
+  Star,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { btnGhost, btnPrimary } from "@/components/landing/ui";
 import {
   DISCORD_PATH,
@@ -176,8 +186,124 @@ function Account({ auth }: { auth: ReturnType<typeof useAuth> }) {
         )}
       </div>
 
+      {auth.purchases.length > 0 && <ReviewForm />}
+
       <LinkForm onLinked={auth.reload} />
     </div>
+  );
+}
+
+interface MyReview {
+  stars: number;
+  text: string;
+  status: "pending" | "approved" | "rejected";
+}
+
+const REVIEW_STATUS: Record<MyReview["status"], string> = {
+  pending: "Wartet auf Freigabe",
+  approved: "Auf der Startseite sichtbar",
+  rejected: "Nicht freigegeben",
+};
+
+function ReviewForm() {
+  const [mine, setMine] = useState<MyReview | null>(null);
+  const [customer, setCustomer] = useState<boolean | null>(null);
+  const [stars, setStars] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  const call = (data: Record<string, unknown>) =>
+    fetch("/api/reviews", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }).then((r) => r.json());
+
+  useEffect(() => {
+    call({ action: "mine" })
+      .then((r) => {
+        setCustomer(!!r.customer);
+        if (r.review) {
+          setMine(r.review);
+          setStars(r.review.stars);
+          setText(r.review.text);
+        }
+      })
+      .catch(() => setCustomer(false));
+  }, []);
+
+  if (!customer) return null;
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    setMsg(null);
+    try {
+      const r = await call({ action: "save", stars, text });
+      setMsg({ ok: !!r.ok, text: r.ok ? r.message : r.error });
+      if (r.ok) setMine(r.review);
+    } catch {
+      setMsg({ ok: false, text: "Speichern fehlgeschlagen." });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <form
+      id="bewertung"
+      onSubmit={save}
+      className="rounded-2xl border border-white/[0.06] bg-card p-6"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold">{mine ? "Deine Bewertung" : "Bewertung abgeben"}</h2>
+        {mine && (
+          <span className="text-xs text-muted-foreground">{REVIEW_STATUS[mine.status]}</span>
+        )}
+      </div>
+      <div className="mt-4 flex gap-1" onMouseLeave={() => setHover(0)}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            type="button"
+            aria-label={`${n} Sterne`}
+            onMouseEnter={() => setHover(n)}
+            onClick={() => setStars(n)}
+            className="p-0.5"
+          >
+            <Star
+              size={26}
+              className={n <= (hover || stars) ? "fill-primary text-primary" : "text-white/20"}
+            />
+          </button>
+        ))}
+      </div>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value.slice(0, 400))}
+        rows={3}
+        placeholder="Was gefällt dir am Client? (10–400 Zeichen)"
+        className="mt-4 w-full resize-none rounded-xl border border-white/10 bg-[#0a0a0f] px-4 py-3 text-sm outline-none transition focus:border-primary"
+      />
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <span className="text-xs text-muted-foreground">
+          {text.length}/400 · Erscheint mit deinem Discord-Namen nach Freigabe
+        </span>
+        <button
+          type="submit"
+          disabled={busy || stars === 0 || text.trim().length < 10}
+          className={`${btnPrimary} disabled:opacity-50`}
+        >
+          {busy ? "Speichere…" : mine ? "Aktualisieren" : "Absenden"}
+        </button>
+      </div>
+      {msg && (
+        <p className={`mt-3 text-sm ${msg.ok ? "text-success" : "text-destructive"}`}>{msg.text}</p>
+      )}
+    </form>
   );
 }
 

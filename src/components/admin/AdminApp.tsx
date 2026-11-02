@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { DISCORD_PATH, loginUrl, logout } from "@/lib/auth";
 import { Dashboard } from "./Dashboard";
 import { Coupons, Promotions } from "./Discounts";
+import { Reviews } from "./Reviews";
 import { Log, Settings } from "./Settings";
 import { AdminError, api, type Role } from "./shared";
 import { Tokens } from "./Tokens";
@@ -17,6 +18,7 @@ const TABS = {
   tokens: "Tokens",
   promotions: "Rabatt-Aktionen",
   coupons: "Gutscheine",
+  reviews: "Bewertungen",
   log: "Protokoll",
   settings: "Einstellungen",
 } as const;
@@ -141,6 +143,7 @@ export function AdminApp() {
         {tab === "tokens" && <Tokens role={me.role} />}
         {tab === "promotions" && <Promotions />}
         {tab === "coupons" && <Coupons />}
+        {tab === "reviews" && <Reviews />}
         {tab === "log" && <Log />}
         {tab === "settings" && <Settings />}
       </main>
