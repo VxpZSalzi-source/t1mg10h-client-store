@@ -18,7 +18,7 @@ export const Route = createFileRoute("/api/reviews")({
     handlers: {
       GET: async () => {
         const reviews = await listApproved().catch(() => []);
-        return Response.json({ reviews }, { headers: { "Cache-Control": "public, max-age=60" } });
+        return Response.json({ reviews }, { headers: { "Cache-Control": "no-store" } });
       },
 
       POST: async ({ request }) => {

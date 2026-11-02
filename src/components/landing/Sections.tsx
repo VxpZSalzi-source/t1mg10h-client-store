@@ -353,7 +353,7 @@ function ReviewCard({ r }: { r: Review }) {
 export function Reviews() {
   const [reviews, setReviews] = useState<Review[] | null>(null);
   useEffect(() => {
-    fetch("/api/reviews")
+    fetch("/api/reviews", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => setReviews(Array.isArray(d.reviews) ? d.reviews : []))
       .catch(() => setReviews([]));
