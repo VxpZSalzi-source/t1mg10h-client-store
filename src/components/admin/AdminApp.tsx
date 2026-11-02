@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
 import { DISCORD_PATH, loginUrl, logout } from "@/lib/auth";
 import { Dashboard } from "./Dashboard";
@@ -28,6 +28,12 @@ function Gate({ title, text, login }: { title: string; text: string; login?: boo
       <div className="w-full max-w-sm rounded-2xl border border-white/[0.06] bg-card p-8 text-center">
         <h1 className="text-2xl font-bold">{title}</h1>
         <p className="mt-3 text-sm text-muted-foreground">{text}</p>
+        <a
+          href="/"
+          className="mt-4 inline-block text-sm text-muted-foreground underline hover:text-white"
+        >
+          Zur Startseite
+        </a>
         {login && (
           <a
             href={loginUrl(typeof window !== "undefined" ? window.location.pathname : "/")}
@@ -98,6 +104,12 @@ export function AdminApp() {
             </span>
           </div>
           <div className="flex items-center gap-3 text-sm">
+            <a
+              href="/"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-muted-foreground transition hover:bg-white/5 hover:text-white"
+            >
+              <Home size={14} /> Startseite
+            </a>
             {me.user.avatar && <img src={me.user.avatar} alt="" className="h-7 w-7 rounded-full" />}
             <span className="hidden sm:inline">{me.user.username}</span>
             <button

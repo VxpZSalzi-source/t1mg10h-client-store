@@ -5,6 +5,7 @@ import {
   clientIp,
   getConfig,
   readLog,
+  rotateAdminPath,
   saveConfig,
   type AppConfig,
 } from "@/lib/config.server";
@@ -187,6 +188,7 @@ const OWNER_ONLY = new Set([
   "deleteCoupon",
   "registerCommands",
   "testTelegram",
+  "rotatePath",
 ]);
 
 const actions: Record<string, Handler> = {
@@ -430,6 +432,21 @@ const actions: Record<string, Handler> = {
     }
   },
 
+  rotatePath: async (a, _b, req) => {
+    const path = await rotateAdminPath();
+    await audit({
+      kind: "admin",
+      action: "admin_path_rotate",
+      actor_id: a.id,
+      actor_name: a.username,
+      ip: clientIp(req),
+    });
+    await notifyAdminAction(
+      `🔁 <b>Admin-Adresse geändert</b>\n\nNeue Adresse: <code>/${path}</code>\n✍️ Von: ${esc(a.username)}`,
+    );
+    return ok({ path });
+  },
+
   testTelegram: async (a) => {
     try {
       await sendTelegram(
@@ -448,6 +465,7 @@ const REASONS = {
   expired: "Deine Admin-Sitzung ist abgelaufen (12 Std.). Bitte neu anmelden.",
   forbidden: "Kein Zugriff.",
   rate: "Zu viele Versuche.",
+  notfound: "Nicht gefunden.",
 };
 
 // Eine geschützte Schnittstelle für das ganze Admin-Panel: POST { action, ... }

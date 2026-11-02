@@ -39,7 +39,11 @@ export async function api<T = Record<string, unknown>>(
   const res = await fetch("/api/admin", {
     method: "POST",
     credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-admin-path":
+        typeof window !== "undefined" ? window.location.pathname.replace(/^\/+|\/+$/g, "") : "",
+    },
     body: JSON.stringify({ action, ...data }),
   });
   const json = await res.json().catch(() => ({}));

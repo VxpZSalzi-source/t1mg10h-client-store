@@ -228,3 +228,31 @@ export const tooMany = () =>
     { valid: false, ok: false, error: "Zu viele Anfragen – versuch es gleich nochmal." },
     { status: 429 },
   );
+
+/* ---------------- Geheime Admin-Adresse ---------------- */
+
+let memoryAdminPath = process.env["ADMIN_PATH"] ?? "cp-lokal-test";
+
+export async function getAdminPath(): Promise<string> {
+  if (!cfg()) return memoryAdminPath;
+  const rows: { value: { path?: string } }[] = await rest(
+    "settings?select=value&key=eq.admin&limit=1",
+  );
+  return rows[0]?.value?.path ?? process.env["ADMIN_PATH"] ?? "";
+}
+
+export async function rotateAdminPath(): Promise<string> {
+  const a = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const path =
+    "cp-" + Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => a[b % a.length]).join("");
+  if (!cfg()) {
+    memoryAdminPath = path;
+    return path;
+  }
+  await rest("settings?on_conflict=key", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({ key: "admin", value: { path }, updated_at: new Date().toISOString() }),
+  });
+  return path;
+}

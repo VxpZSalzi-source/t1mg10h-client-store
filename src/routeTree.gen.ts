@@ -10,11 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SlugRouteImport } from './routes/$slug'
 import { Route as AgbRouteImport } from './routes/agb'
 import { Route as DatenschutzRouteImport } from './routes/datenschutz'
 import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as KontoRouteImport } from './routes/konto'
-import { Route as PanelMubl2polsxRouteImport } from './routes/panel-mubl2polsx'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as TestRouteImport } from './routes/test'
 import { Route as WiderrufRouteImport } from './routes/widerruf'
@@ -39,6 +39,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SlugRoute = SlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AgbRoute = AgbRouteImport.update({
   id: '/agb',
   path: '/agb',
@@ -57,11 +62,6 @@ const ImpressumRoute = ImpressumRouteImport.update({
 const KontoRoute = KontoRouteImport.update({
   id: '/konto',
   path: '/konto',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PanelMubl2polsxRoute = PanelMubl2polsxRouteImport.update({
-  id: '/panel-mubl2polsx',
-  path: '/panel-mubl2polsx',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuccessRoute = SuccessRouteImport.update({
@@ -157,11 +157,11 @@ const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/agb': typeof AgbRoute
   '/datenschutz': typeof DatenschutzRoute
   '/impressum': typeof ImpressumRoute
   '/konto': typeof KontoRoute
-  '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/widerruf': typeof WiderrufRoute
@@ -183,11 +183,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/agb': typeof AgbRoute
   '/datenschutz': typeof DatenschutzRoute
   '/impressum': typeof ImpressumRoute
   '/konto': typeof KontoRoute
-  '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/widerruf': typeof WiderrufRoute
@@ -210,11 +210,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$slug': typeof SlugRoute
   '/agb': typeof AgbRoute
   '/datenschutz': typeof DatenschutzRoute
   '/impressum': typeof ImpressumRoute
   '/konto': typeof KontoRoute
-  '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
   '/widerruf': typeof WiderrufRoute
@@ -238,11 +238,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$slug'
     | '/agb'
     | '/datenschutz'
     | '/impressum'
     | '/konto'
-    | '/panel-mubl2polsx'
     | '/success'
     | '/test'
     | '/widerruf'
@@ -264,11 +264,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$slug'
     | '/agb'
     | '/datenschutz'
     | '/impressum'
     | '/konto'
-    | '/panel-mubl2polsx'
     | '/success'
     | '/test'
     | '/widerruf'
@@ -290,11 +290,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$slug'
     | '/agb'
     | '/datenschutz'
     | '/impressum'
     | '/konto'
-    | '/panel-mubl2polsx'
     | '/success'
     | '/test'
     | '/widerruf'
@@ -317,11 +317,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SlugRoute: typeof SlugRoute
   AgbRoute: typeof AgbRoute
   DatenschutzRoute: typeof DatenschutzRoute
   ImpressumRoute: typeof ImpressumRoute
   KontoRoute: typeof KontoRoute
-  PanelMubl2polsxRoute: typeof PanelMubl2polsxRoute
   SuccessRoute: typeof SuccessRoute
   TestRoute: typeof TestRoute
   WiderrufRoute: typeof WiderrufRoute
@@ -351,6 +351,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$slug': {
+      id: '/$slug'
+      path: '/$slug'
+      fullPath: '/$slug'
+      preLoaderRoute: typeof SlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/agb': {
       id: '/agb'
       path: '/agb'
@@ -377,13 +384,6 @@ declare module '@tanstack/react-router' {
       path: '/konto'
       fullPath: '/konto'
       preLoaderRoute: typeof KontoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/panel-mubl2polsx': {
-      id: '/panel-mubl2polsx'
-      path: '/panel-mubl2polsx'
-      fullPath: '/panel-mubl2polsx'
-      preLoaderRoute: typeof PanelMubl2polsxRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/success': {
@@ -517,11 +517,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SlugRoute: SlugRoute,
   AgbRoute: AgbRoute,
   DatenschutzRoute: DatenschutzRoute,
   ImpressumRoute: ImpressumRoute,
   KontoRoute: KontoRoute,
-  PanelMubl2polsxRoute: PanelMubl2polsxRoute,
   SuccessRoute: SuccessRoute,
   TestRoute: TestRoute,
   WiderrufRoute: WiderrufRoute,

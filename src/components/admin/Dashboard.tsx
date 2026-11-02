@@ -38,6 +38,7 @@ export const ACTION_LABELS: Record<string, string> = {
   coupon_off: "Gutschein deaktiviert",
   coupon_delete: "Gutschein gelöscht",
   roles_removed: "Discord-Rollen entfernt",
+  admin_path_rotate: "Admin-Adresse geändert",
 };
 
 function Tile({ label, value, sub }: { label: string; value: string; sub?: string }) {

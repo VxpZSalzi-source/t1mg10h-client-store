@@ -471,6 +471,28 @@ export function Settings() {
           <p className="mt-2 text-xs text-muted-foreground">Danach oben auf „Speichern“ klicken.</p>
         </Card>
 
+        <Card title="Admin-Adresse">
+          <p className="mb-3 text-sm text-muted-foreground">
+            Die Adresse steht nur auf dem Server, nicht im Code der Website. Neu erzeugen, falls sie
+            jemand kennt – die alte funktioniert danach sofort nicht mehr. Die neue kommt auch per
+            Telegram.
+          </p>
+          <button
+            onClick={async () => {
+              setToolMsg(null);
+              try {
+                const r = await api<{ path: string }>("rotatePath");
+                window.location.href = `/${r.path}`;
+              } catch (e) {
+                setToolMsg({ ok: false, text: e instanceof Error ? e.message : "Fehler" });
+              }
+            }}
+            className={btn}
+          >
+            Neue Admin-Adresse erzeugen
+          </button>
+        </Card>
+
         <Card title="Discord-Bot">
           <p className="mb-3 text-sm text-muted-foreground">
             Einmalig klicken, damit /verify und /lizenz auf deinem Server erscheinen.
