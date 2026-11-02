@@ -3,7 +3,7 @@ import { getConfig, rateLimited, tooMany } from "@/lib/config.server";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { checkCoupon, quote, type Coupon } from "@/lib/pricing.server";
 import { discordConfig, getSessionUser } from "@/lib/session.server";
-import { createCheckoutSession, fulfillFree, stripeKey } from "@/lib/stripe.server";
+import { createCheckoutSession, stripeKey } from "@/lib/stripe.server";
 
 const err = (error: string, status = 400) => Response.json({ error }, { status });
 
@@ -36,12 +36,6 @@ export const Route = createFileRoute("/api/checkout/")({
         }
         const q = await quote(plan, coupon);
         const buyer = user ? { id: user.id, username: user.username } : null;
-
-        if (q.final === 0) {
-          const p = await fulfillFree(q, buyer);
-          if (!p) return err("Dieser Gutscheincode wurde gerade aufgebraucht.");
-          return Response.json({ free: true, token: p.token });
-        }
 
         if (!stripeKey()) return err("Der Shop ist gerade nicht verfügbar.", 503);
         try {

@@ -64,6 +64,22 @@ export async function createCheckoutSession(q: PriceQuote, user: Buyer): Promise
     q.promoPercent ? `Aktion −${q.promoPercent} %` : "",
     q.couponCode ? `Code ${q.couponCode} −${q.couponPercent} %` : "",
   ].filter(Boolean);
+
+  // 0 € (100 %-Aktion oder -Code): Trotzdem über Stripe, damit der echte Kaufablauf durchlaufen wird.
+  // Stripe zeigt dann den Preis + 100 % Rabatt und schließt ohne Zahlung ab ("no_payment_required").
+  let unitAmount = q.final;
+  let discounts: { coupon: string }[] | undefined;
+  if (q.final === 0) {
+    unitAmount = q.afterPromo > 0 ? q.afterPromo : q.base;
+    const coupon = await stripe("coupons", "POST", {
+      percent_off: 100,
+      duration: "once",
+      max_redemptions: 1,
+      name: (parts.join(" · ") || "Rabatt 100 %").slice(0, 40),
+    });
+    discounts = [{ coupon: coupon.id }];
+  }
+
   return stripe("checkout/sessions", "POST", {
     mode: "payment",
     locale: "de",
@@ -74,7 +90,7 @@ export async function createCheckoutSession(q: PriceQuote, user: Buyer): Promise
         quantity: 1,
         price_data: {
           currency: "eur",
-          unit_amount: q.final,
+          unit_amount: unitAmount,
           product_data: {
             name: `T1mg10h Client – ${PLANS[q.plan].name}`,
             description:
@@ -84,6 +100,7 @@ export async function createCheckoutSession(q: PriceQuote, user: Buyer): Promise
         },
       },
     ],
+    discounts,
     metadata: {
       plan: q.plan,
       coupon: q.couponCode ?? "",
@@ -134,7 +151,10 @@ async function notifyCoupon(code: string, user: string | null, plan: PlanId) {
 export async function fulfillSession(session: StripeSession): Promise<Purchase | null> {
   const existing = await findBySessionId(session.id);
   if (existing) return existing;
-  if (session.status !== "complete" || session.payment_status !== "paid") return null;
+  // "no_payment_required" = Bestellung über 0 € (100 % Rabatt)
+  const paid =
+    session.payment_status === "paid" || session.payment_status === "no_payment_required";
+  if (session.status !== "complete" || !paid) return null;
 
   const plan = session.metadata?.["plan"] as PlanId;
   if (!(plan in PLANS)) throw new Error("Unbekannter Plan in Stripe-Session");

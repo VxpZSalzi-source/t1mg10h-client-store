@@ -467,7 +467,7 @@ function Checkout({
                 {state === "loading"
                   ? "Weiterleitung…"
                   : final === 0
-                    ? "Kostenlos holen"
+                    ? "Weiter zur Kasse (0 €)"
                     : "Weiter zur Zahlung"}
               </button>
             </div>
