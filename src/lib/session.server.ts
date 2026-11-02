@@ -5,6 +5,7 @@ export interface SessionUser {
   id: string;
   username: string;
   avatar: string | null; // fertige Bild-URL
+  iat?: number; // Zeitpunkt der Anmeldung (ms)
 }
 
 const SESSION_COOKIE = "t1_session";
@@ -65,7 +66,9 @@ function cookie(name: string, value: string, maxAge: number) {
 
 export async function createSessionCookie(user: SessionUser): Promise<string> {
   const payload = b64url(
-    enc.encode(JSON.stringify({ ...user, exp: Date.now() + SESSION_DAYS * 864e5 })),
+    enc.encode(
+      JSON.stringify({ ...user, iat: Date.now(), exp: Date.now() + SESSION_DAYS * 864e5 }),
+    ),
   );
   return cookie(SESSION_COOKIE, `${payload}.${await hmac(payload)}`, SESSION_DAYS * 86400);
 }
@@ -81,7 +84,12 @@ export async function getSessionUser(request: Request): Promise<SessionUser | nu
     if (!safeEqual(sig, await hmac(payload))) return null;
     const data = JSON.parse(new TextDecoder().decode(fromB64url(payload)));
     if (typeof data.exp !== "number" || data.exp < Date.now()) return null;
-    return { id: data.id, username: data.username, avatar: data.avatar ?? null };
+    return {
+      id: data.id,
+      username: data.username,
+      avatar: data.avatar ?? null,
+      iat: typeof data.iat === "number" ? data.iat : 0,
+    };
   } catch {
     return null;
   }

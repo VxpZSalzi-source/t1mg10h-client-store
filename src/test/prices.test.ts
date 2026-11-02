@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PLANS } from "@/lib/telegram.functions";
+import { PLANS } from "@/lib/plans";
 
 describe("Preise", () => {
   it("Monatlich kostet 9.99€", () => expect(PLANS.monthly.price).toBe("9.99€"));

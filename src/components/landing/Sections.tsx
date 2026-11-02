@@ -21,7 +21,7 @@ import {
   REVIEWS,
   STEPS,
 } from "@/data/content";
-import { PLANS } from "@/lib/telegram.functions";
+import { PLANS } from "@/lib/plans";
 import { ClickGuiMockup } from "./Mockups";
 import { btnGhost, btnPrimary, Counter, PlaceholderTag, Reveal, SectionHeading } from "./ui";
 

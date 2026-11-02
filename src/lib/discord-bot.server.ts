@@ -116,12 +116,18 @@ export async function registerCommands() {
 const MONTH_MS = 30 * 864e5;
 
 /** Lizenzstatus: Lifetime schlägt Monatlich, sonst jüngster Monatskauf (30 Tage). */
+/** Lizenzstatus: Lifetime schlägt Monatlich, sonst die am längsten laufende Monatslizenz. */
 export function licenseStatus(purchases: Purchase[]) {
   const life = purchases.find((p) => p.plan === "lifetime");
   if (life) return { active: true, label: "Lifetime", until: null as number | null, best: life };
   const monthly = purchases
     .filter((p) => p.plan === "monthly")
-    .map((p) => ({ p, until: new Date(p.purchasedAt).getTime() + MONTH_MS }))
+    .map((p) => ({
+      p,
+      until: p.expiresAt
+        ? new Date(p.expiresAt).getTime()
+        : new Date(p.purchasedAt).getTime() + MONTH_MS,
+    }))
     .sort((a, b) => b.until - a.until)[0];
   if (!monthly) return { active: false, label: "Keine Lizenz", until: null, best: null };
   return {

@@ -1,4 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { roleOf } from "@/lib/admin.server";
+import { audit, clientIp, getConfig } from "@/lib/config.server";
+import { esc, sendTelegram } from "@/lib/telegram.functions";
 import {
   clearStateCookie,
   createSessionCookie,
@@ -63,6 +66,31 @@ export const Route = createFileRoute("/api/auth/callback")({
             username: me.global_name || me.username,
             avatar,
           });
+
+          // Admin-Login melden
+          const role = await roleOf(me.id).catch(() => null);
+          if (role) {
+            const ip = clientIp(request);
+            const name = me.global_name || me.username;
+            await audit({
+              kind: "admin",
+              action: "admin_login",
+              actor_id: me.id,
+              actor_name: name,
+              ip,
+            });
+            const config = await getConfig().catch(() => null);
+            if (config?.telegram.adminLogin) {
+              const ua = request.headers.get("user-agent") ?? "";
+              const device = /mobile|android|iphone/i.test(ua) ? "Handy" : "PC/Laptop";
+              await sendTelegram(
+                `🔐 <b>Admin-Login</b>\n\n👤 ${esc(name)} (${role === "owner" ? "Owner" : "Admin"})\n` +
+                  `💻 ${device} · IP <code>${esc(ip)}</code>\n` +
+                  `🕒 ${new Date().toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}\n\n` +
+                  `Warst du das nicht? Sofort Discord-Passwort ändern!`,
+              ).catch(() => {});
+            }
+          }
 
           return new Response(null, {
             status: 302,

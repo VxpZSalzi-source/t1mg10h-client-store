@@ -474,11 +474,11 @@ export const FOOTER_LINKS = [
   { title: "Community", links: [{ label: "Discord", href: DISCORD_URL }] },
   {
     title: "Rechtliches",
-    // PLATZHALTER: Links zu deinen echten Seiten eintragen
     links: [
-      { label: "AGB", href: "#" },
-      { label: "Impressum", href: "#" },
-      { label: "Datenschutz", href: "#" },
+      { label: "Impressum", href: "/impressum" },
+      { label: "Datenschutz", href: "/datenschutz" },
+      { label: "AGB", href: "/agb" },
+      { label: "Widerrufsbelehrung", href: "/widerruf" },
     ],
   },
 ];

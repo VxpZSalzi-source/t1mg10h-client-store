@@ -10,21 +10,48 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgbRouteImport } from './routes/agb'
+import { Route as DatenschutzRouteImport } from './routes/datenschutz'
+import { Route as ImpressumRouteImport } from './routes/impressum'
 import { Route as KontoRouteImport } from './routes/konto'
 import { Route as PanelMubl2polsxRouteImport } from './routes/panel-mubl2polsx'
 import { Route as SuccessRouteImport } from './routes/success'
 import { Route as TestRouteImport } from './routes/test'
+import { Route as WiderrufRouteImport } from './routes/widerruf'
+import { Route as ApiAdminRouteImport } from './routes/api/admin'
+import { Route as ApiPricingRouteImport } from './routes/api/pricing'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiAccountLinkRouteImport } from './routes/api/account/link'
+import { Route as ApiAccountResetIgnRouteImport } from './routes/api/account/reset-ign'
 import { Route as ApiAuthCallbackRouteImport } from './routes/api/auth/callback'
 import { Route as ApiAuthDiscordRouteImport } from './routes/api/auth/discord'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiCheckoutIndexRouteImport } from './routes/api/checkout/index'
+import { Route as ApiCheckoutCouponRouteImport } from './routes/api/checkout/coupon'
+import { Route as ApiCheckoutStatusRouteImport } from './routes/api/checkout/status'
+import { Route as ApiCronHourlyRouteImport } from './routes/api/cron/hourly'
 import { Route as ApiDiscordInteractionsRouteImport } from './routes/api/discord/interactions'
+import { Route as ApiStripeWebhookRouteImport } from './routes/api/stripe/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgbRoute = AgbRouteImport.update({
+  id: '/agb',
+  path: '/agb',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatenschutzRoute = DatenschutzRouteImport.update({
+  id: '/datenschutz',
+  path: '/datenschutz',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImpressumRoute = ImpressumRouteImport.update({
+  id: '/impressum',
+  path: '/impressum',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KontoRoute = KontoRouteImport.update({
@@ -47,6 +74,21 @@ const TestRoute = TestRouteImport.update({
   path: '/test',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WiderrufRoute = WiderrufRouteImport.update({
+  id: '/widerruf',
+  path: '/widerruf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminRoute = ApiAdminRouteImport.update({
+  id: '/api/admin',
+  path: '/api/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPricingRoute = ApiPricingRouteImport.update({
+  id: '/api/pricing',
+  path: '/api/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiValidateRoute = ApiValidateRouteImport.update({
   id: '/api/validate',
   path: '/api/validate',
@@ -55,6 +97,11 @@ const ApiValidateRoute = ApiValidateRouteImport.update({
 const ApiAccountLinkRoute = ApiAccountLinkRouteImport.update({
   id: '/api/account/link',
   path: '/api/account/link',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAccountResetIgnRoute = ApiAccountResetIgnRouteImport.update({
+  id: '/api/account/reset-ign',
+  path: '/api/account/reset-ign',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthCallbackRoute = ApiAuthCallbackRouteImport.update({
@@ -77,113 +124,222 @@ const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
   path: '/api/auth/me',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCheckoutIndexRoute = ApiCheckoutIndexRouteImport.update({
+  id: '/api/checkout/',
+  path: '/api/checkout/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCheckoutCouponRoute = ApiCheckoutCouponRouteImport.update({
+  id: '/api/checkout/coupon',
+  path: '/api/checkout/coupon',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCheckoutStatusRoute = ApiCheckoutStatusRouteImport.update({
+  id: '/api/checkout/status',
+  path: '/api/checkout/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronHourlyRoute = ApiCronHourlyRouteImport.update({
+  id: '/api/cron/hourly',
+  path: '/api/cron/hourly',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiDiscordInteractionsRoute = ApiDiscordInteractionsRouteImport.update({
   id: '/api/discord/interactions',
   path: '/api/discord/interactions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiStripeWebhookRoute = ApiStripeWebhookRouteImport.update({
+  id: '/api/stripe/webhook',
+  path: '/api/stripe/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agb': typeof AgbRoute
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/konto': typeof KontoRoute
   '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
+  '/widerruf': typeof WiderrufRoute
+  '/api/admin': typeof ApiAdminRoute
+  '/api/pricing': typeof ApiPricingRoute
   '/api/validate': typeof ApiValidateRoute
   '/api/account/link': typeof ApiAccountLinkRoute
+  '/api/account/reset-ign': typeof ApiAccountResetIgnRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/discord': typeof ApiAuthDiscordRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/checkout/coupon': typeof ApiCheckoutCouponRoute
+  '/api/checkout/status': typeof ApiCheckoutStatusRoute
+  '/api/cron/hourly': typeof ApiCronHourlyRoute
   '/api/discord/interactions': typeof ApiDiscordInteractionsRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/checkout/': typeof ApiCheckoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agb': typeof AgbRoute
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/konto': typeof KontoRoute
   '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
+  '/widerruf': typeof WiderrufRoute
+  '/api/admin': typeof ApiAdminRoute
+  '/api/pricing': typeof ApiPricingRoute
   '/api/validate': typeof ApiValidateRoute
   '/api/account/link': typeof ApiAccountLinkRoute
+  '/api/account/reset-ign': typeof ApiAccountResetIgnRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/discord': typeof ApiAuthDiscordRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/checkout/coupon': typeof ApiCheckoutCouponRoute
+  '/api/checkout/status': typeof ApiCheckoutStatusRoute
+  '/api/cron/hourly': typeof ApiCronHourlyRoute
   '/api/discord/interactions': typeof ApiDiscordInteractionsRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/checkout': typeof ApiCheckoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agb': typeof AgbRoute
+  '/datenschutz': typeof DatenschutzRoute
+  '/impressum': typeof ImpressumRoute
   '/konto': typeof KontoRoute
   '/panel-mubl2polsx': typeof PanelMubl2polsxRoute
   '/success': typeof SuccessRoute
   '/test': typeof TestRoute
+  '/widerruf': typeof WiderrufRoute
+  '/api/admin': typeof ApiAdminRoute
+  '/api/pricing': typeof ApiPricingRoute
   '/api/validate': typeof ApiValidateRoute
   '/api/account/link': typeof ApiAccountLinkRoute
+  '/api/account/reset-ign': typeof ApiAccountResetIgnRoute
   '/api/auth/callback': typeof ApiAuthCallbackRoute
   '/api/auth/discord': typeof ApiAuthDiscordRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRoute
+  '/api/checkout/coupon': typeof ApiCheckoutCouponRoute
+  '/api/checkout/status': typeof ApiCheckoutStatusRoute
+  '/api/cron/hourly': typeof ApiCronHourlyRoute
   '/api/discord/interactions': typeof ApiDiscordInteractionsRoute
+  '/api/stripe/webhook': typeof ApiStripeWebhookRoute
+  '/api/checkout/': typeof ApiCheckoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agb'
+    | '/datenschutz'
+    | '/impressum'
     | '/konto'
     | '/panel-mubl2polsx'
     | '/success'
     | '/test'
+    | '/widerruf'
+    | '/api/admin'
+    | '/api/pricing'
     | '/api/validate'
     | '/api/account/link'
+    | '/api/account/reset-ign'
     | '/api/auth/callback'
     | '/api/auth/discord'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/checkout/coupon'
+    | '/api/checkout/status'
+    | '/api/cron/hourly'
     | '/api/discord/interactions'
+    | '/api/stripe/webhook'
+    | '/api/checkout/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agb'
+    | '/datenschutz'
+    | '/impressum'
     | '/konto'
     | '/panel-mubl2polsx'
     | '/success'
     | '/test'
+    | '/widerruf'
+    | '/api/admin'
+    | '/api/pricing'
     | '/api/validate'
     | '/api/account/link'
+    | '/api/account/reset-ign'
     | '/api/auth/callback'
     | '/api/auth/discord'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/checkout/coupon'
+    | '/api/checkout/status'
+    | '/api/cron/hourly'
     | '/api/discord/interactions'
+    | '/api/stripe/webhook'
+    | '/api/checkout'
   id:
     | '__root__'
     | '/'
+    | '/agb'
+    | '/datenschutz'
+    | '/impressum'
     | '/konto'
     | '/panel-mubl2polsx'
     | '/success'
     | '/test'
+    | '/widerruf'
+    | '/api/admin'
+    | '/api/pricing'
     | '/api/validate'
     | '/api/account/link'
+    | '/api/account/reset-ign'
     | '/api/auth/callback'
     | '/api/auth/discord'
     | '/api/auth/logout'
     | '/api/auth/me'
+    | '/api/checkout/coupon'
+    | '/api/checkout/status'
+    | '/api/cron/hourly'
     | '/api/discord/interactions'
+    | '/api/stripe/webhook'
+    | '/api/checkout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgbRoute: typeof AgbRoute
+  DatenschutzRoute: typeof DatenschutzRoute
+  ImpressumRoute: typeof ImpressumRoute
   KontoRoute: typeof KontoRoute
   PanelMubl2polsxRoute: typeof PanelMubl2polsxRoute
   SuccessRoute: typeof SuccessRoute
   TestRoute: typeof TestRoute
+  WiderrufRoute: typeof WiderrufRoute
+  ApiAdminRoute: typeof ApiAdminRoute
+  ApiPricingRoute: typeof ApiPricingRoute
   ApiValidateRoute: typeof ApiValidateRoute
   ApiAccountLinkRoute: typeof ApiAccountLinkRoute
+  ApiAccountResetIgnRoute: typeof ApiAccountResetIgnRoute
   ApiAuthCallbackRoute: typeof ApiAuthCallbackRoute
   ApiAuthDiscordRoute: typeof ApiAuthDiscordRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRoute
+  ApiCheckoutCouponRoute: typeof ApiCheckoutCouponRoute
+  ApiCheckoutStatusRoute: typeof ApiCheckoutStatusRoute
+  ApiCronHourlyRoute: typeof ApiCronHourlyRoute
   ApiDiscordInteractionsRoute: typeof ApiDiscordInteractionsRoute
+  ApiStripeWebhookRoute: typeof ApiStripeWebhookRoute
+  ApiCheckoutIndexRoute: typeof ApiCheckoutIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -193,6 +349,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agb': {
+      id: '/agb'
+      path: '/agb'
+      fullPath: '/agb'
+      preLoaderRoute: typeof AgbRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/datenschutz': {
+      id: '/datenschutz'
+      path: '/datenschutz'
+      fullPath: '/datenschutz'
+      preLoaderRoute: typeof DatenschutzRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/impressum': {
+      id: '/impressum'
+      path: '/impressum'
+      fullPath: '/impressum'
+      preLoaderRoute: typeof ImpressumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/konto': {
@@ -223,6 +400,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/widerruf': {
+      id: '/widerruf'
+      path: '/widerruf'
+      fullPath: '/widerruf'
+      preLoaderRoute: typeof WiderrufRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin': {
+      id: '/api/admin'
+      path: '/api/admin'
+      fullPath: '/api/admin'
+      preLoaderRoute: typeof ApiAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/pricing': {
+      id: '/api/pricing'
+      path: '/api/pricing'
+      fullPath: '/api/pricing'
+      preLoaderRoute: typeof ApiPricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/validate': {
       id: '/api/validate'
       path: '/api/validate'
@@ -235,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/api/account/link'
       fullPath: '/api/account/link'
       preLoaderRoute: typeof ApiAccountLinkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/account/reset-ign': {
+      id: '/api/account/reset-ign'
+      path: '/api/account/reset-ign'
+      fullPath: '/api/account/reset-ign'
+      preLoaderRoute: typeof ApiAccountResetIgnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/callback': {
@@ -265,6 +470,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/checkout/': {
+      id: '/api/checkout/'
+      path: '/api/checkout'
+      fullPath: '/api/checkout/'
+      preLoaderRoute: typeof ApiCheckoutIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checkout/coupon': {
+      id: '/api/checkout/coupon'
+      path: '/api/checkout/coupon'
+      fullPath: '/api/checkout/coupon'
+      preLoaderRoute: typeof ApiCheckoutCouponRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/checkout/status': {
+      id: '/api/checkout/status'
+      path: '/api/checkout/status'
+      fullPath: '/api/checkout/status'
+      preLoaderRoute: typeof ApiCheckoutStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/hourly': {
+      id: '/api/cron/hourly'
+      path: '/api/cron/hourly'
+      fullPath: '/api/cron/hourly'
+      preLoaderRoute: typeof ApiCronHourlyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/discord/interactions': {
       id: '/api/discord/interactions'
       path: '/api/discord/interactions'
@@ -272,22 +505,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiDiscordInteractionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/stripe/webhook': {
+      id: '/api/stripe/webhook'
+      path: '/api/stripe/webhook'
+      fullPath: '/api/stripe/webhook'
+      preLoaderRoute: typeof ApiStripeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgbRoute: AgbRoute,
+  DatenschutzRoute: DatenschutzRoute,
+  ImpressumRoute: ImpressumRoute,
   KontoRoute: KontoRoute,
   PanelMubl2polsxRoute: PanelMubl2polsxRoute,
   SuccessRoute: SuccessRoute,
   TestRoute: TestRoute,
+  WiderrufRoute: WiderrufRoute,
+  ApiAdminRoute: ApiAdminRoute,
+  ApiPricingRoute: ApiPricingRoute,
   ApiValidateRoute: ApiValidateRoute,
   ApiAccountLinkRoute: ApiAccountLinkRoute,
+  ApiAccountResetIgnRoute: ApiAccountResetIgnRoute,
   ApiAuthCallbackRoute: ApiAuthCallbackRoute,
   ApiAuthDiscordRoute: ApiAuthDiscordRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRoute,
+  ApiCheckoutCouponRoute: ApiCheckoutCouponRoute,
+  ApiCheckoutStatusRoute: ApiCheckoutStatusRoute,
+  ApiCronHourlyRoute: ApiCronHourlyRoute,
   ApiDiscordInteractionsRoute: ApiDiscordInteractionsRoute,
+  ApiStripeWebhookRoute: ApiStripeWebhookRoute,
+  ApiCheckoutIndexRoute: ApiCheckoutIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

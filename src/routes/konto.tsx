@@ -2,7 +2,15 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, Check, Copy, Eye, EyeOff, KeyRound, LogOut, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { btnGhost, btnPrimary } from "@/components/landing/ui";
-import { DISCORD_PATH, linkToken, loginUrl, logout, useAuth, type OwnPurchase } from "@/lib/auth";
+import {
+  DISCORD_PATH,
+  linkToken,
+  loginUrl,
+  logout,
+  resetIgn,
+  useAuth,
+  type OwnPurchase,
+} from "@/lib/auth";
 
 const ERRORS: Record<string, string> = {
   abgebrochen: "Anmeldung abgebrochen. Bitte versuche es erneut.",
@@ -20,7 +28,6 @@ export const Route = createFileRoute("/konto")({
   component: KontoPage,
 });
 
-const MONTH_MS = 30 * 864e5;
 const fmt = (iso: string) =>
   new Date(iso).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" });
 
@@ -29,8 +36,8 @@ function licenseStatus(purchases: OwnPurchase[]) {
   if (purchases.some((p) => p.plan === "lifetime"))
     return { active: true, label: "Lifetime aktiv" };
   const until = purchases
-    .filter((p) => p.plan === "monthly")
-    .map((p) => new Date(p.purchasedAt).getTime() + MONTH_MS)
+    .filter((p) => p.plan === "monthly" && p.expiresAt)
+    .map((p) => new Date(p.expiresAt!).getTime())
     .sort((a, b) => b - a)[0];
   if (!until) return { active: false, label: "Keine Lizenz" };
   return until > Date.now()
@@ -163,7 +170,7 @@ function Account({ auth }: { auth: ReturnType<typeof useAuth> }) {
         ) : (
           <ul className="mt-4 divide-y divide-white/[0.06]">
             {auth.purchases.map((p) => (
-              <LicenseRow key={p.token} p={p} />
+              <LicenseRow key={p.token} p={p} onChanged={auth.reload} />
             ))}
           </ul>
         )}
@@ -174,50 +181,103 @@ function Account({ auth }: { auth: ReturnType<typeof useAuth> }) {
   );
 }
 
-function LicenseRow({ p }: { p: OwnPurchase }) {
+function LicenseRow({ p, onChanged }: { p: OwnPurchase; onChanged: () => void }) {
   const [show, setShow] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [armed, setArmed] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const masked = p.token.replace(/[A-Z0-9]{4}$/, "••••").replace(/-[A-Z0-9]{4}-/, "-••••-");
   const copy = () =>
     navigator.clipboard.writeText(p.token).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     });
+  const reset = async () => {
+    if (!armed) {
+      setArmed(true);
+      setTimeout(() => setArmed(false), 4000);
+      return;
+    }
+    setArmed(false);
+    const r = await resetIgn(p.token);
+    setMsg({ ok: r.ok, text: r.message });
+    if (r.ok) onChanged();
+  };
+  const resetBlocked = !!p.nextIgnReset && new Date(p.nextIgnReset).getTime() > Date.now();
 
   return (
-    <li className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <div className="flex items-center gap-2">
-          <span className="font-semibold">{p.plan === "lifetime" ? "Lifetime" : "Monatlich"}</span>
-          <span className="text-sm text-muted-foreground">· {p.price.replace(".", ",")}</span>
-        </div>
-        <div className="mt-0.5 text-xs text-muted-foreground">
-          Gekauft am {fmt(p.purchasedAt)} ·{" "}
-          {p.redeemedAt ? (
-            <span className="text-success">Im Client aktiviert</span>
-          ) : (
-            "Noch nicht im Client aktiviert"
+    <li className="py-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-semibold">
+              {p.plan === "lifetime" ? "Lifetime" : "Monatlich"}
+            </span>
+            {p.admin && (
+              <span className="rounded border border-primary/30 bg-primary/10 px-1.5 text-[10px] font-semibold uppercase text-primary">
+                Admin
+              </span>
+            )}
+            {p.active ? (
+              <span className="rounded border border-success/30 bg-success/10 px-1.5 text-[10px] font-semibold uppercase text-success">
+                Aktiv
+              </span>
+            ) : (
+              <span className="rounded border border-destructive/30 bg-destructive/10 px-1.5 text-[10px] font-semibold uppercase text-destructive">
+                Abgelaufen
+              </span>
+            )}
+          </div>
+          <div className="mt-0.5 text-xs text-muted-foreground">
+            Gekauft am {fmt(p.purchasedAt)}
+            {p.expiresAt ? ` · gültig bis ${fmt(p.expiresAt)}` : " · für immer"} ·{" "}
+            {p.redeemedAt ? (
+              <span className="text-success">Im Client aktiviert</span>
+            ) : (
+              "Noch nicht im Client aktiviert"
+            )}
+          </div>
+          {p.boundTo && (
+            <div className="mt-1 text-xs text-muted-foreground">
+              Gebunden an <span className="font-mono text-white">{p.boundTo}</span>
+              {p.canResetIgn &&
+                (resetBlocked ? (
+                  <span> · Zurücksetzen wieder ab {fmt(p.nextIgnReset!)}</span>
+                ) : (
+                  <button
+                    onClick={reset}
+                    className={`ml-2 underline ${armed ? "text-destructive" : "hover:text-white"}`}
+                  >
+                    {armed ? "Wirklich zurücksetzen?" : "Name zurücksetzen"}
+                  </button>
+                ))}
+            </div>
+          )}
+          {msg && (
+            <div className={`mt-1 text-xs ${msg.ok ? "text-success" : "text-destructive"}`}>
+              {msg.text}
+            </div>
           )}
         </div>
-      </div>
-      <div className="flex items-center gap-1">
-        <code className="rounded-lg bg-white/5 px-3 py-1.5 font-mono text-sm">
-          {show ? p.token : masked}
-        </code>
-        <button
-          onClick={() => setShow((s) => !s)}
-          className="rounded-lg p-2 text-muted-foreground hover:text-white"
-          title="Anzeigen"
-        >
-          {show ? <EyeOff size={16} /> : <Eye size={16} />}
-        </button>
-        <button
-          onClick={copy}
-          className="rounded-lg p-2 text-muted-foreground hover:text-white"
-          title="Kopieren"
-        >
-          {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
-        </button>
+        <div className="flex items-center gap-1">
+          <code className="rounded-lg bg-white/5 px-3 py-1.5 font-mono text-sm">
+            {show ? p.token : masked}
+          </code>
+          <button
+            onClick={() => setShow((s) => !s)}
+            className="rounded-lg p-2 text-muted-foreground hover:text-white"
+            title="Anzeigen"
+          >
+            {show ? <EyeOff size={16} /> : <Eye size={16} />}
+          </button>
+          <button
+            onClick={copy}
+            className="rounded-lg p-2 text-muted-foreground hover:text-white"
+            title="Kopieren"
+          >
+            {copied ? <Check size={16} className="text-success" /> : <Copy size={16} />}
+          </button>
+        </div>
       </div>
     </li>
   );

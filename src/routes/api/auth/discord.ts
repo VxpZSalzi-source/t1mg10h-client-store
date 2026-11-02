@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { rateLimited } from "@/lib/config.server";
 import {
   createStateCookie,
   discordConfig,
@@ -15,6 +16,9 @@ export const Route = createFileRoute("/api/auth/discord")({
         const cfg = discordConfig();
         if (!cfg)
           return new Response("Discord-Login ist noch nicht eingerichtet.", { status: 503 });
+        if (await rateLimited("discordLogin", request)) {
+          return new Response("Zu viele Anmeldeversuche – bitte warte kurz.", { status: 429 });
+        }
         const returnTo = safeReturnTo(new URL(request.url).searchParams.get("returnTo"));
         const state = randomState();
         const url = new URL("https://discord.com/oauth2/authorize");

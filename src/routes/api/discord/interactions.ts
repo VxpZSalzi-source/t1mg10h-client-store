@@ -8,6 +8,7 @@ import {
   SITE,
   verifyDiscordRequest,
 } from "@/lib/discord-bot.server";
+import { getConfig } from "@/lib/config.server";
 import { linkToken, listByDiscord } from "@/lib/purchases.server";
 
 // Farben: Blau = Info, Grün = Erfolg, Rot = Fehler
@@ -85,7 +86,7 @@ async function handleVerify(userId: string, username: string, tokenOpt?: string)
     return reply(
       {
         title: "⏳ Lizenz abgelaufen",
-        description: `Deine Monatslizenz ist am **${fmtDate(status.until!)}** abgelaufen. Verlängere sie auf der Website, dann bekommst du die Rolle wieder.`,
+        description: `Deine Monatslizenz ist am **${fmtDate(status.until!)}** abgelaufen. Kauf auf der Website eine neue Lizenz und verknüpfe den neuen Token, dann bekommst du die Rolle wieder.`,
         color: RED,
       },
       true,
@@ -93,10 +94,15 @@ async function handleVerify(userId: string, username: string, tokenOpt?: string)
   }
 
   let roleNote = "Du hast die **Kunden-Rolle** erhalten.";
-  try {
-    await addCustomerRole(userId);
-  } catch {
-    roleNote = "⚠️ Die Rolle konnte nicht vergeben werden – bitte melde dich beim Support.";
+  const { discordAutoRole } = await getConfig();
+  if (!discordAutoRole) {
+    roleNote = "Deine Lizenz ist gültig.";
+  } else {
+    try {
+      await addCustomerRole(userId);
+    } catch {
+      roleNote = "⚠️ Die Rolle konnte nicht vergeben werden – bitte melde dich beim Support.";
+    }
   }
 
   return reply({
