@@ -40,6 +40,7 @@ function AccountButton({ full = false, onClick }: { full?: boolean; onClick?: ()
   return (
     <a
       href={loginUrl("/konto")}
+      target="_top"
       onClick={onClick}
       className={`inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-white transition hover:border-white/20 hover:bg-white/[0.06] ${full ? "w-full" : ""}`}
     >

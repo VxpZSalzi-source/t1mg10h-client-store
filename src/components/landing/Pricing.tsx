@@ -370,7 +370,7 @@ function Checkout({
               Melde dich zum Kaufen mit Discord an. So landet der Kauf in „Mein Konto“, und du
               bekommst auf dem Discord-Server automatisch deine Rolle.
             </p>
-            <a href={loginUrl("/#preise")} className={`${btnPrimary} mt-6 w-full`}>
+            <a href={loginUrl("/#preise")} target="_top" className={`${btnPrimary} mt-6 w-full`}>
               Mit Discord anmelden & kaufen
             </a>
           </div>

@@ -137,7 +137,9 @@ function SuccessPage() {
                       jederzeit unter „Mein Konto“.
                     </p>
                     <a
-                      href={loginUrl(`/success?session_id=${encodeURIComponent(session_id)}`)}
+                      href={loginUrl(
+                        `/success?session_id=${encodeURIComponent(session_id)} target="_top"`,
+                      )}
                       className="mt-4 inline-flex w-full items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] py-3 font-semibold transition hover:bg-white/[0.06]"
                     >
                       Mit Discord verknüpfen

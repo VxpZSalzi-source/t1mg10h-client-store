@@ -102,7 +102,7 @@ function LoginCard() {
         Verbinde deinen Discord-Account, um deine Lizenzen zu sehen und Käufe deinem Account
         zuzuordnen.
       </p>
-      <a href={loginUrl("/konto")} className={`${btnPrimary} mt-8`}>
+      <a href={loginUrl("/konto")} target="_top" className={`${btnPrimary} mt-8`}>
         <DiscordIcon size={18} /> Mit Discord anmelden
       </a>
       <p className="mt-4 text-xs text-muted-foreground">

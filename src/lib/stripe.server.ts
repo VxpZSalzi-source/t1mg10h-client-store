@@ -176,11 +176,10 @@ export async function fulfillSession(session: StripeSession): Promise<Purchase |
   return created;
 }
 
-/** 100 %-Gutschein: Token ohne Zahlung. Gibt null zurück, wenn der Code gerade aufgebraucht wurde. */
+/** 0 € (durch 100 %-Code oder 100 %-Aktion): Token ohne Zahlung. null = Code gerade aufgebraucht. */
 export async function fulfillFree(q: PriceQuote, user: Buyer): Promise<Purchase | null> {
-  if (!q.couponCode) return null;
   const token = generateToken();
-  if (!(await consumeCoupon(q.couponCode, user?.id ?? null, token))) return null;
+  if (q.couponCode && !(await consumeCoupon(q.couponCode, user?.id ?? null, token))) return null;
   const purchasedAt = new Date().toISOString();
   const p: Purchase = {
     token,
@@ -202,9 +201,9 @@ export async function fulfillFree(q: PriceQuote, user: Buyer): Promise<Purchase 
     actor_id: user?.id ?? null,
     actor_name: user?.username ?? null,
     target: token,
-    details: { plan: q.plan, coupon: q.couponCode },
+    details: { plan: q.plan, coupon: q.couponCode, promoPercent: q.promoPercent },
   });
-  await notifyCoupon(q.couponCode, user?.username ?? null, q.plan);
+  if (q.couponCode) await notifyCoupon(q.couponCode, user?.username ?? null, q.plan);
   await notifyPurchase(p, false, 0);
   return p;
 }

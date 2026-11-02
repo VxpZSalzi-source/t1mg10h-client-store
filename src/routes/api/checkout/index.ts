@@ -39,7 +39,7 @@ export const Route = createFileRoute("/api/checkout/")({
 
         if (q.final === 0) {
           const p = await fulfillFree(q, buyer);
-          if (!p) return err("Dieser Gutscheincode ist gerade aufgebraucht.");
+          if (!p) return err("Dieser Gutscheincode wurde gerade aufgebraucht.");
           return Response.json({ free: true, token: p.token });
         }
 

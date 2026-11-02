@@ -37,6 +37,7 @@ function Gate({ title, text, login }: { title: string; text: string; login?: boo
         {login && (
           <a
             href={loginUrl(typeof window !== "undefined" ? window.location.pathname : "/")}
+            target="_top"
             className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-3 font-semibold text-white hover:bg-[#2f74e8]"
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
