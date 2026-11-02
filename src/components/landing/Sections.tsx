@@ -10,7 +10,7 @@ import {
   User,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CHANGELOG,
   DISCORD_URL,
@@ -363,11 +363,46 @@ export function ReviewStrip({ list }: { list: Review[] }) {
       </div>
     );
   }
+  return <Marquee list={list} />;
+}
+
+/** Laufband per requestAnimationFrame: Beim Hovern bremst es weich auf ~15 % ab statt anzuhalten. */
+function Marquee({ list }: { list: Review[] }) {
+  const track = useRef<HTMLDivElement>(null);
+  const hover = useRef(false);
   const base = Array.from({ length: Math.ceil(6 / list.length) }, () => list).flat();
   const loop = [...base, ...base];
+
+  useEffect(() => {
+    const el = track.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const DURATION = 45; // Sekunden pro Durchlauf bei normalem Tempo
+    let x = 0;
+    let speed = 0; // aktuelle Geschwindigkeit (px/s), wird weich an das Ziel angeglichen
+    let last = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const period = el.scrollWidth / 2;
+      const target = (period / DURATION) * (hover.current ? 0.15 : 1);
+      speed += (target - speed) * Math.min(1, dt * 3);
+      x -= speed * dt;
+      if (period > 0 && -x >= period) x += period;
+      el.style.transform = `translate3d(${x}px,0,0)`;
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [list]);
+
   return (
-    <div className="marquee [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]">
-      <div className="marquee-track flex w-max gap-4 px-2">
+    <div
+      className="marquee [mask-image:linear-gradient(90deg,transparent,black_8%,black_92%,transparent)]"
+      onMouseEnter={() => (hover.current = true)}
+      onMouseLeave={() => (hover.current = false)}
+    >
+      <div ref={track} className="flex w-max gap-4 px-2 will-change-transform">
         {loop.map((r, i) => (
           <div key={i} aria-hidden={i >= base.length}>
             <ReviewCard r={r} />
