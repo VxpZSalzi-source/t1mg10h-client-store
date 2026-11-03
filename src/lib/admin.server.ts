@@ -8,8 +8,8 @@ export interface AdminUser extends SessionUser {
   role: AdminRole;
 }
 
-/** Admin-Sitzungen gelten 12 Stunden ab Discord-Anmeldung. */
-const ADMIN_SESSION_MS = 12 * 3600 * 1000;
+/** Admin-Sitzungen gelten wie der normale Login 30 Tage ab letzter Nutzung (Cookie wird erneuert). */
+const ADMIN_SESSION_MS = 30 * 864e5;
 
 export const ownerId = () => process.env["OWNER_DISCORD_ID"]?.trim() || null;
 

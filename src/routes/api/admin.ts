@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { requireAdmin, type AdminUser } from "@/lib/admin.server";
+import { refreshSessionCookie } from "@/lib/session.server";
 import {
   audit,
   clientIp,
@@ -535,7 +536,11 @@ export const Route = createFileRoute("/api/admin")({
           return fail("Nur der Owner darf das.", 403);
         }
         try {
-          return await handler(auth.admin, body, request);
+          const res = await handler(auth.admin, body, request);
+          // Admin-Panel offen = Login wird verlängert
+          const fresh = await refreshSessionCookie(auth.admin).catch(() => null);
+          if (fresh) res.headers.append("Set-Cookie", fresh);
+          return res;
         } catch (e) {
           return fail(e instanceof Error ? e.message : "Fehler", 500);
         }

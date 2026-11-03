@@ -73,6 +73,12 @@ export async function createSessionCookie(user: SessionUser): Promise<string> {
   return cookie(SESSION_COOKIE, `${payload}.${await hmac(payload)}`, SESSION_DAYS * 86400);
 }
 
+/** Rollierende Sitzung: Wer die Seite nutzt, bleibt angemeldet. Älter als 1 Tag → neues Cookie (wieder 30 Tage). */
+export async function refreshSessionCookie(user: SessionUser | null): Promise<string | null> {
+  if (!user || (user.iat && Date.now() - user.iat < 864e5)) return null;
+  return createSessionCookie({ id: user.id, username: user.username, avatar: user.avatar });
+}
+
 export const clearSessionCookie = () => cookie(SESSION_COOKIE, "", 0);
 
 export async function getSessionUser(request: Request): Promise<SessionUser | null> {

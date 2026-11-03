@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { roleOf } from "@/lib/admin.server";
 import { getConfig } from "@/lib/config.server";
 import { isActive, listByDiscord } from "@/lib/purchases.server";
-import { discordConfig, getSessionUser } from "@/lib/session.server";
+import { discordConfig, getSessionUser, refreshSessionCookie } from "@/lib/session.server";
 
 // Aktueller Login + eigene Käufe
 export const Route = createFileRoute("/api/auth/me")({
@@ -15,6 +15,9 @@ export const Route = createFileRoute("/api/auth/me")({
         const config = await getConfig().catch(() => null);
         const resetMs = (config?.ignResetDays ?? 7) * 864e5;
         const role = user ? await roleOf(user.id).catch(() => null) : null;
+        const fresh = await refreshSessionCookie(user).catch(() => null);
+        const headers: Record<string, string> = { "Cache-Control": "no-store" };
+        if (fresh) headers["Set-Cookie"] = fresh;
         return Response.json(
           {
             enabled,
@@ -38,7 +41,7 @@ export const Route = createFileRoute("/api/auth/me")({
                 : null,
             })),
           },
-          { headers: { "Cache-Control": "no-store" } },
+          { headers },
         );
       },
     },
